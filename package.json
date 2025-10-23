@@ -1,0 +1,26 @@
+{
+    "name": "patio",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "lodash": "^4.17.21",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "sortablejs": "^1.15.6",
+        "vite": "^6.3.4"
+    },
+    "devDependencies": {
+        "@types/chrome": "^0.1.24",
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.2",
+        "@vitejs/plugin-react": "^5.0.4"
+    }
+}

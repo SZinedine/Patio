@@ -1,0 +1,42 @@
+{
+    "manifest_version": 3,
+    "name": "Patio",
+    "description": "Customize new tab page by adding links to websites",
+    "version": "0.1.0",
+    "icons": {
+        "16": "logo/logo_16.png",
+        "48": "logo/logo_48.png",
+        "128": "logo/logo_128.png",
+        "512": "logo/logo_512.png"
+    },
+    "permissions": [
+        "bookmarks",
+        "history",
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "*://*/*"
+    ],
+    "action": {
+        "default_title": "Patio Popup",
+        "default_popup": "src/popup/popup.html"
+    },
+    "options_page": "src/settings/settings.html",
+    "chrome_url_overrides": {
+        "newtab": "newtab.html"
+    },
+    "background": {
+        "service_worker": "worker/service-worker.js"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "content/content.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}
