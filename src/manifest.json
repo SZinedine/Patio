@@ -15,28 +15,10 @@
         "storage",
         "tabs"
     ],
-    "host_permissions": [
-        "*://*/*"
-    ],
-    "action": {
-        "default_title": "Patio Popup",
-        "default_popup": "src/popup/popup.html"
-    },
-    "options_page": "src/settings/settings.html",
     "chrome_url_overrides": {
         "newtab": "newtab.html"
     },
     "background": {
         "service_worker": "worker/service-worker.js"
-    },
-    "content_scripts": [
-        {
-            "js": [
-                "content/content.js"
-            ],
-            "matches": [
-                "<all_urls>"
-            ]
-        }
-    ]
+    }
 }

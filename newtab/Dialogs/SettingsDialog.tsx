@@ -1,96 +1,184 @@
-import { useEffect, ReactNode, useRef } from "react";
+import { useEffect, useRef, forwardRef, useState, RefObject } from "react"
+import { loadAndApplyBackground, storeImage, applyThreadSettings } from "../Utils/SettingsUtils";
+import { fetchSettings, saveSettings } from "../Utils/Data";
+
 
 type SettingsDialogProps = {
-    open: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
+    dialogRef: RefObject<HTMLDialogElement | null>;
 };
 
-export default function SettingsDialog({ open, onClose, onConfirm }: SettingsDialogProps): ReactNode {
-    const ref = useRef<HTMLInputElement>(null);
+export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
+    // const dialogRef = useRef<HTMLDialogElement>(null);
+    const bgRef = useRef<HTMLInputElement>(null);
+    const threadWidthRef = useRef<HTMLInputElement>(null);
+    const threadOpacityRef = useRef<HTMLInputElement>(null);
+    const threadBlurRef = useRef<HTMLInputElement>(null);
+    const [threadWidth, setThreadWidth] = useState(300);
+    const [threadOpacity, setThreadOpacity] = useState(0.9);
+    const [threadBlur, setThreadBlur] = useState(40);
 
     useEffect(() => {
         loadAndApplyBackground();
+        fetchSettings().then(settings => {
+            setThreadWidth(settings.threadWidth ?? 300);
+            setThreadOpacity(settings.threadOpacity ?? 0.9);
+            setThreadBlur(settings.threadBlur ?? 40);
+        });
     }, []);
 
-    if (!open) {
-        return null;
-    }
+    useEffect(() => {
+        requestAnimationFrame(() =>
+            applyThreadSettings({ threadWidth, threadOpacity, threadBlur })
+        );
+    }, [threadWidth, threadOpacity, threadBlur]);
 
-    const confirm = () => {
-        const file = ref.current?.files?.[0];
-        if (!file) {
-            return;
+    const confirm = async () => {
+        const file = bgRef.current?.files?.[0];
+        if (file) {
+            await storeImage(file);
+            await loadAndApplyBackground();
         }
 
-        storeImage(file).then(_ => {
-            loadAndApplyBackground();
-            onConfirm();
-        });
-    }
+        try {
+            const settings = await fetchSettings();
+            const newWidthStr = threadWidthRef.current?.value;
+            const newOpacity_ = threadOpacityRef.current?.value;
+            const newBlur_ = threadBlurRef.current?.value;
 
-    return <>
-        <div
-            className="fixed inset-0 z-1000 flex items-center justify-center p-4 backdrop-blur-lg"
-            onClick={onClose}
-        >
-            <div
-                className="flex w-full max-w-lg flex-col gap-4 rounded-lg border border-base-300 bg-base-200 p-6 text-base-content shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <h2 className="text-center text-lg font-semibold">Settings</h2>
-                <input ref={ref} type="file" accept="image/*" className="file-input file-input-bordered w-full" />
-                <div className="mt-4 flex justify-end gap-3">
-                    <button type="button" onClick={confirm} className="btn btn-primary">Ok</button>
-                    <button type="button" onClick={onClose} className="btn btn-ghost">Cancel</button>
+            if (!newWidthStr) throw new Error("no width");
+            if (!newOpacity_) throw new Error("no opacity");
+
+            const newWidth = parseInt(newWidthStr, 10);
+            const newOpacity = parseFloat(newOpacity_!);
+            const newBlur = parseFloat(newBlur_!);
+
+            await saveSettings({
+                ...settings,
+                threadWidth: newWidth,
+                threadOpacity: newOpacity,
+                threadBlur: newBlur,
+            });
+
+            setThreadWidth(newWidth);
+            setThreadOpacity(newOpacity);
+            setThreadBlur(newBlur);
+
+        } catch (err) {
+            console.log("Failed to save width:", err);
+        }
+
+        dialogRef.current?.close();
+    };
+
+    const cancel = () => dialogRef.current?.close();
+
+    return (
+        <dialog ref={dialogRef} id="settings-dialog" className="modal modal-bottom sm:modal-middle">
+            <div className="modal-box">
+                <h2 className="font-bold text-3xl text-center">Settings</h2>
+
+                <BackgroundImage ref={bgRef} />
+                <ThreadWidth ref={threadWidthRef} width={threadWidth} />
+                <ThreadOpacity ref={threadOpacityRef} opacity={threadOpacity} />
+                <ThreadBlur ref={threadBlurRef} blur={threadBlur} />
+
+                <div className="modal-action">
+                    <button className="btn" onClick={cancel}>Cancel</button>
+                    <button className="btn" onClick={confirm}>OK</button>
                 </div>
             </div>
+        </dialog>
+    );
+}
+
+const BackgroundImage = forwardRef<HTMLInputElement>((_props, ref) => {
+    return (
+        <fieldset className="fieldset center mt-7">
+            <legend className="fieldset-legend text-xl">Pick a background image</legend>
+            <input ref={ref} type="file" accept="image/*" className="file-input place-self-center" />
+        </fieldset>
+    );
+});
+
+const ThreadWidth = forwardRef<HTMLInputElement, { width?: number }>(({ width }, ref) => {
+    const [value, setValue] = useState(width);
+
+    useEffect(() => {
+        setValue(width);
+    }, [width]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(parseInt(e.target.value, 10));
+    };
+
+    return (
+        <div className="mt-7 w-full">
+            <div className="text-xl"><b>Thread Width:</b> {value}</div>
+            <input
+                onChange={handleChange}
+                ref={ref}
+                type="range"
+                min={250}
+                max={600}
+                value={value}
+                className="range range-lg w-full"
+            />
         </div>
-    </>
-}
+    );
+});
 
+const ThreadOpacity = forwardRef<HTMLInputElement, { opacity?: number }>(({ opacity }, ref) => {
+    const [value, setValue] = useState(opacity);
 
-async function storeImage(file: File) {
-    return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("Patio", 1);
-        request.onupgradeneeded = () => {
-            const db = request.result;
-            if (!db.objectStoreNames.contains("images")) {
-                db.createObjectStore("images");
-            }
-        };
-        request.onsuccess = () => {
-            const db = request.result;
-            const tx = db.transaction("images", "readwrite");
-            const blob = new Blob([file], { type: file.type });
-            tx.objectStore("images").put(blob, "background");
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        };
-        request.onerror = () => reject(request.error);
-    });
-}
+    useEffect(() => {
+        setValue(opacity);
+    }, [opacity]);
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(parseFloat(e.target.value));
+    };
 
-async function loadAndApplyBackground() {
-    return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("Patio", 1);
-        request.onupgradeneeded = () => {
-            request.result.createObjectStore("images");
-        };
-        request.onsuccess = () => {
-            const db = request.result;
-            const tx = db.transaction("images", "readonly");
-            const getReq = tx.objectStore("images").get("background");
-            getReq.onsuccess = () => {
-                const blob = getReq.result as Blob | undefined;
-                if (!blob) return resolve();
-                const url = URL.createObjectURL(blob);
-                document.documentElement.style.backgroundImage = `url(${url})`;
-                resolve();
-            };
-            getReq.onerror = () => reject(getReq.error);
-        };
-        request.onerror = () => reject(request.error);
-    });
-}
+    return (
+        <div className="mt-7 w-full">
+            <div className="text-xl"><b>Thread Opacity:</b> {value}</div>
+            <input
+                onChange={handleChange}
+                ref={ref}
+                type="range"
+                step={0.01}
+                min={0.0}
+                max={1.0}
+                value={value}
+                className="range range-lg w-full"
+            />
+        </div>
+    );
+});
+
+const ThreadBlur = forwardRef<HTMLInputElement, { blur?: number }>(({ blur }, ref) => {
+    const [value, setValue] = useState(blur);
+
+    useEffect(() => {
+        setValue(blur);
+    }, [blur]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(parseFloat(e.target.value));
+    };
+
+    return (
+        <div className="mt-7 w-full">
+            <div className="text-xl"><b>Thread Blur:</b> {value}</div>
+            <input
+                onChange={handleChange}
+                ref={ref}
+                type="range"
+                step={1}
+                min={0}
+                max={100}
+                value={value}
+                className="range range-lg w-full"
+            />
+        </div>
+    );
+});

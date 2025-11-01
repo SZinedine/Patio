@@ -4,27 +4,41 @@ export type CellType = {
     title: string;
     link: string;
     description: string;
-    uuid?: string;
-    children?: CellType[];
+    uuid: string;
+    children: CellType[];
 };
 
 export type ListType = {
-    type: "list";
+    type?: "list";
     uuid: string;
     title: string;
     children: CellType[];
 };
 
 export type ThreadType = {
-    type: "thread";
+    type?: "thread";
     uuid: string;
     title: string;
     children: ListType[];
 }
 
 export type SettingsType = {
-    backgroundImage: string;
+    locked: boolean;
+    threadWidth: number;
+    threadOpacity: number;
+    threadBlur: number;
 }
+
+
+/**
+ * when the add button of a cell is pressed, these are the information that are passed
+ */
+export type CellAddingDataType = {
+    parentListUuid: string;
+    cellUuid?: string;
+    parentCellUuid?: string;
+};
+
 
 export function createThread(title: string): ThreadType {
     return {
@@ -50,12 +64,21 @@ export function createCell(title: string, link: string, description: string): Ce
         title: title,
         link: link,
         description: description,
-        uuid: crypto.randomUUID()
+        uuid: crypto.randomUUID(),
+        children: []
     }
 }
 
-export function createSettings(backgroundImage: string = ""): SettingsType {
+export function createSettings(
+        locked: boolean = false,
+        threadWidth: number = 300,
+        threadOpacity: number = 0.5,
+        threadBlur: number = 10,
+): SettingsType {
     return {
-        backgroundImage: backgroundImage,
+        locked: locked,
+        threadWidth: threadWidth,
+        threadOpacity: threadOpacity,
+        threadBlur: threadBlur,
     }
 }

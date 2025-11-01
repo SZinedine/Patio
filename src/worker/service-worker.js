@@ -1,10 +1,11 @@
 importScripts('data.js')
 
 const defaultSettings = {
-    backgroundImage: "",
+    locked: false,
+    threadWidth: 300,
+    threadOpacity: 0.9,
+    threadBlur: 40,
 }
-
-chrome.runtime.onMessage.addListener(receiveMessage);
 
 chrome.runtime.onInstalled.addListener(async () => {
     // storeData(testingData);      // for testing
@@ -17,118 +18,336 @@ chrome.runtime.onInstalled.addListener(async () => {
     }
 
     if (!settings) {
-        storeSettings(defaultSettings);
+        await storeSettings({ settings: defaultSettings });
     }
 });
 
 
-function receiveMessage(request, sender, sendResponse) {
-    if (request.action === "data") {
-        getData().then((data) => {
-            sendResponse({ data: JSON.stringify(data), response: true });
-        }).catch(e => {
-            sendResponse({ response: false });
-            console.error(`Error while fetching data: ${e}`)
-        });
+chrome.runtime.onMessage.addListener(receiveMessage);
 
-        return true;
-
-    } else if (request.action === "get settings") {
-        getSettings().then(settings => {
-            sendResponse({ settings: JSON.stringify(settings) });
-        }).catch((err) => {
-            sendResponse({ response: false });
-            console.error(err)
-        });
-
-        return true;
-
-    } else if (request.action === "set settings") {
-        storeSettings(request.settings).then(_ => {
-            sendResponse({ response: true });
-        }).catch((err) => {
-            sendResponse({ response: false });
-            console.error(err)
-        });
-
-        return true;
-
-    } else if (request.action === "insert thread") {
-        insertThread(request).then(() => {
+/**
+ * @param {any} request
+ * @param {(response?: any) => void} sendResponse 
+ */
+function receiveMessage(request, _, sendResponse) {
+    /**
+     * convenience function for similar requests/responses
+     * @param {Promise<any>} promise
+     */
+    const processSet = (promise) => {
+        promise.then(() => {
             sendResponse({ data: true });
+        }).catch(err => {
+            sendResponse({ data: false, error: err });
+            console.error(err);
         });
+    };
 
-        return true;
+    switch (request.action) {
+        case "data":
+            getData().then((data) => {
+                sendResponse({ data: data, response: true });
+            }).catch(err => {
+                sendResponse({ data: false, error: err });
+                console.error(`Error while fetching data: ${err}`);
+            });
+            return true;
 
-    } else if (request.action === "insert list") {
-        insertList(request).then(() => {
-            sendResponse({ data: true });
-        });
+        case "get settings":
+            getSettings().then(settings => {
+                sendResponse({ settings: settings });
+            }).catch(err => {
+                sendResponse({ data: false, error: err });
+                console.error(err);
+            });
+            return true;
 
-        return true;
+        case "set settings":
+            processSet(storeSettings(request));
+            return true;
 
-    } else if (request.action === "insert cell") {
-        insertCell(request).then(() => {
-            sendResponse({ data: true });
-        });
+        case "edit thread":
+            processSet(editThread(request));
+            return true;
 
-        return true;
+        case "insert thread":
+            processSet(insertThread(request));
+            return true;
 
-    } else {
-        sendResponse({ data: "error" });
+        case "insert list":
+            processSet(insertList(request));
+            return true;
 
-        return true;
+        case "edit list":
+            processSet(editList(request));
+            return true;
+
+        case "insert cell":
+            processSet(insertCell(request));
+            return true;
+
+        case "edit cell":
+            processSet(editCell(request));
+            return true;
+
+        case "insert subcell":
+            processSet(insertSubCell(request));
+            return true;
+
+        case "delete cell":
+            processSet(deleteCell(request));
+            return true;
+
+        case "delete thread":
+            processSet(deleteThread(request));
+            return true;
+
+        case "delete list":
+            processSet(deleteList(request));
+            return true;
+
+        default:
+            sendResponse({
+                data: false,
+                message: `Error: Unrecognized request "${request.action}"`
+            });
+            return true;
     }
+}
+
+/**
+ * insert a thread
+ * @param {Object} request 
+ */
+async function insertThread(request) {
+    let data = await getData();
+    data.push(request.thread);
+    await storeData(data);
 }
 
 
 /**
- * insert a thread
- * @param {Object} req 
+ * edit a thread
+ * @param {Object} request 
  */
-async function insertThread(req) {
+async function editThread(request) {
+    const editedThread = request.thread;
     let data = await getData();
-    data.push(req.thread);
+
+    for (let thread of data) {
+        if (thread.uuid === editedThread.uuid) {
+            thread.title = editedThread.title;
+            await storeData(data);
+            return;
+        }
+    }
+
+    throw new Error("Error while trying to edit a Thread");
+}
+
+
+/**
+ * delete a thread
+ * @param {Object} request 
+ */
+async function deleteThread(request) {
+    const threadUuid = request.thread;
+    if (!threadUuid) {
+        throw new Error("the provided Thread UUID is invalid")
+    }
+
+    let data = await getData();
+    data = data.filter((th) => th.uuid !== threadUuid)
+    await storeData(data);
+}
+
+
+/**
+ * delete a list
+ * @param {Object} request 
+ */
+async function deleteList(request) {
+    const listUuid = request.list;
+    if (!listUuid) {
+        throw new Error("the provided List UUID is invalid")
+    }
+
+    let data = await getData();
+
+    data = data.map(th => {
+        th.children = th.children.filter(lst => lst.uuid !== listUuid)
+        return th;
+    })
+
     await storeData(data);
 }
 
 
 /**
  * insert a list into a thread
- * @param {Object} req 
+ * @param {Object} request 
  */
-async function insertList(req) {
-    const uuid = req.thread;
+async function insertList(request) {
+    const uuid = request.thread;
     let data = await getData();
 
     for (let thread of data) {
         if (thread.uuid === uuid) {
-            thread.children.push(req.list);
-            break;
+            thread.children.push(request.list);
+            await storeData(data);
+            return;
         }
     }
+
+    throw new Error("Error while trying to insert a List");
+}
+
+
+/**
+ * edit a list
+ * @param {Object} request 
+ */
+async function editList(request) {
+    const editedList = request.list;
+    let data = await getData();
+
+    for (let thread of data) {
+        for (let list of thread.children) {
+            if (list.uuid === editedList.uuid) {
+                list.title = editedList.title;
+                console.log(list);
+                await storeData(data);
+                return;
+            }
+        }
+    }
+
+    throw new Error("Error while trying to insert a List");
+}
+
+
+/**
+ * insert a cell into a list
+ * @param {Object} request 
+ */
+async function insertCell(request) {
+    const uuid = request.list;
+    let data = await getData();
+    for (let thread of data) {
+        for (let list of thread.children) {
+            if (list.uuid === uuid) {
+                list.children.push(request.cell);
+                await storeData(data);
+                return;
+            }
+        }
+    }
+
+    throw new Error("Error while trying to insert a Cell");
+}
+
+
+/**
+ * edit a cell
+ * @param {Object} request 
+ */
+async function editCell(request) {
+    const newCell = request.cell;
+    const uuid = newCell.uuid;
+    let data = await getData();
+
+    const findAndUpdateCell = (cells) => {
+        for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            if (cell.uuid === uuid) {
+                cells[i].title = newCell.title;
+                cells[i].link = newCell.link;
+                cells[i].description = newCell.description;
+                return true;
+            }
+
+            if (cell.children && cell.children.length > 0) {
+                if (findAndUpdateCell(cell.children)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
+    for (let thread of data) {
+        for (let list of thread.children) {
+            if (findAndUpdateCell(list.children)) {
+                await storeData(data);
+                return;
+            }
+        }
+    }
+
+    throw new Error("Error while trying to edit a Cell: Cell not found.");
+}
+
+
+/**
+ * delete a cell
+ * @param {Object} request 
+ */
+async function deleteCell(request) {
+    const cellUuid = request.cell;
+    let data = await getData();
+
+    if (!cellUuid) {
+        throw new Error("Error while deleting a cell. invalid UUID")
+    }
+
+    const removeCell = (cells) => {
+        return cells
+            .filter(cell => cell.uuid !== cellUuid)
+            .map(cell => ({
+                ...cell,
+                children: removeCell(cell.children || [])
+            }));
+    };
+
+    data = data.map(thread => ({
+        ...thread,
+        children: thread.children.map(list => ({
+            ...list,
+            children: removeCell(list.children || [])
+        }))
+    }));
 
     await storeData(data);
 }
 
 
 /**
- * insert a cell into a list
- * @param {Object} req 
+ * insert a subcell into a cell
+ * @param {Object} request 
  */
-async function insertCell(req) {
-    const uuid = req.list;
+async function insertSubCell(request) {
+    const parentList = request.list;
+    const parentCell = request.parentCell;
+    const newCell = request.cell;
+
     let data = await getData();
     for (let thread of data) {
         for (let list of thread.children) {
-            if (list.uuid === uuid) {
-                list.children.push(req.cell);
-                break;
+            if (list.uuid === parentList) {
+                for (let cell of list.children) {
+                    if (cell.uuid === parentCell) {
+                        cell.children = cell.children ? cell.children : [];
+                        cell.children.push(newCell);
+                        await storeData(data);
+                        return;
+                    }
+                }
             }
         }
     }
 
-    await storeData(data);
+    throw new Error(`Error while trying to insert subcell: Parent list or cell not found.`);
 }
 
 
@@ -172,10 +391,11 @@ async function hasData() {
 
 
 /**
- * @param {Object} settings 
+ * @param {Object} req 
  * @returns {Promise<void>}
  */
-async function storeSettings(settings) {
+async function storeSettings(req) {
+    const settings = req.settings;
     if (!settings) {
         throw new Error("storeSettings: invalid setting object");
     }

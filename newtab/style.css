@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+:root {
+    interpolate-size: allow-keywords;
+}
 
 * {
     text-decoration: none;
@@ -10,12 +13,14 @@
 
 html {
     overflow: hidden;
+    /* background-image: url(/home/szinedine/Pictures/wallpaper/wllpapr3.jpg); */
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     height: 100%;
     margin: 0;
     padding: 30px;
+
 }
 
 #root {
@@ -26,113 +31,19 @@ html {
 }
 
 
-
-:root {
-    /* Backgrounds */
-    --color-bg: #121212;
-    --color-bg-secondary: #1e1e1e;
-    --color-bg-tertiary: #2a2a2a;
-
-    /* Text */
-    --color-text: #e0e0e0;
-    --color-text-secondary: #b3b3b3;
-    --color-text-muted: #888888;
-
-    /* Borders and dividers */
-    --color-border: #333333;
-    --color-border-light: #444444;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-
-    /* Transparent overlays */
-    --overlay-dark: rgba(0, 0, 0, 0.6);
-    --overlay-light: rgba(255, 255, 255, 0.1);
-
-    --thread-box-shadow: var(--shadow-sm), var(--shadow-sm), var(--shadow-sm), var(--shadow-sm);
-    interpolate-size: allow-keywords;
-
-    /* --thread-box-shadow: */
-    /*     rgba(0, 0, 0, 0.25) 0px 54px 55px, */
-    /*     rgba(0, 0, 0, 0.12) 0px -12px 30px, */
-    /*     rgba(0, 0, 0, 0.12) 0px 4px 6px, */
-    /*     rgba(0, 0, 0, 0.17) 0px 12px 13px, */
-    /*     rgba(0, 0, 0, 0.09) 0px -3px 5px; */
+details::details-content {
+    block-size: 0;
+    transition-property: block-size, content-visibility;
+    transition-duration: 0.3s;
+    transition-behavior: allow-discrete;
 }
 
+details[open]::details-content {
+    block-size: auto;
+    block-size: calc-size(auto);
+}
 
-/***********************************************/
-
-
-/**** scrollbar *****/
-
-/* ::-webkit-scrollbar { */
-/*     width: 6px; */
-/*     height: 6px; */
-/* } */
-
-/* ::-webkit-scrollbar-track { */
-/*     background-color: #1a1a1a; */
-/*     opacity: 0.3; */
-/* } */
-
-/* ::-webkit-scrollbar-thumb { */
-/*     background-color: #555; */
-/*     border-radius: 3px; */
-/* } */
-
-/* ::-webkit-scrollbar-thumb:hover { */
-/*     background-color: #777; */
-/* } */
-
-
-
-/*************** Menu *****************/
-
-/* .menu-root { */
-/*     position: fixed; */
-/*     top: 10px; */
-/*     right: 10px; */
-/*     z-index: 1000; */
-/* } */
-
-/* .menu-btn { */
-/*     background: none; */
-/*     border: none; */
-/*     color: var(--color-text); */
-/*     cursor: pointer; */
-/*     padding: 6px; */
-/*     display: flex; */
-/*     align-items: center; */
-/*     justify-content: center; */
-/* } */
-
-/* .menu-icon { */
-/*     pointer-events: none; */
-/* } */
-
-/* .menu-list { */
-/*     position: absolute; */
-/*     top: 100%; */
-/*     right: 0; */
-/*     margin-top: 6px; */
-/*     background-color: var(--color-bg-secondary); */
-/*     border: 1px solid var(--color-border); */
-/*     border-radius: 6px; */
-/*     box-shadow: var(--shadow-md); */
-/*     list-style: none; */
-/*     padding: 4px 0; */
-/*     width: 160px; */
-/* } */
-
-/* .menu-item { */
-/*     padding: 8px 12px; */
-/*     color: var(--color-text); */
-/*     cursor: pointer; */
-/* } */
-
-/* .menu-item:hover { */
-/*     background-color: var(--color-bg-tertiary); */
-/* } */
+/* Disable expand/collapse animation during initial load */
+body.no-anim details::details-content {
+    transition-duration: 0s !important;
+}
