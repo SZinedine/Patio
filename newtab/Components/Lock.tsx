@@ -9,7 +9,7 @@ export default function Lock() {
     useEffect(() => {
         fetchSettings()
             .then(settings => setLocked(Boolean(settings.locked)))
-            .catch(_ => console.error("error while loading the lock status"));
+            .catch(() => console.error("error while loading the lock status"));
     }, []);
 
     const clicked = () => {
@@ -21,9 +21,13 @@ export default function Lock() {
         });
     };
 
-    return <button onClick={clicked} className="cursor-pointer m-1 p-2" title="Lock/unlock">
+    return <button onClick={clicked}
+        className="fixed bottom-4 right-4 p-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80
+                   hover:text-white backdrop-blur-md border border-white/10
+                   transition-all hover:scale-105 active:scale-95"
+        title="Lock/unlock">
         {
-            locked ? <FaLock size={15} /> : <FaLockOpen size={15} />
+            locked ? <FaLock size={20} /> : <FaLockOpen size={20} />
         }
     </button>
 }

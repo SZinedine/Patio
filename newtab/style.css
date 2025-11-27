@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  exclude: properties;  /* this removed the warning */
+}
 
 :root {
     interpolate-size: allow-keywords;
@@ -11,39 +13,28 @@
     user-select: none;
 }
 
-html {
+html, body {
     overflow: hidden;
-    /* background-image: url(/home/szinedine/Pictures/wallpaper/wllpapr3.jpg); */
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     height: 100%;
     margin: 0;
-    padding: 30px;
-
-}
-
-#root {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    column-gap: 90px;
+    padding: 0;
 }
 
 
-details::details-content {
-    block-size: 0;
-    transition-property: block-size, content-visibility;
-    transition-duration: 0.3s;
-    transition-behavior: allow-discrete;
+/* drag and drop style */
+.ghost {
+    opacity: 0.2;
 }
 
-details[open]::details-content {
-    block-size: auto;
-    block-size: calc-size(auto);
+.chosen {
+    border: solid 1px gray;
+    opacity: 1.0;
+    color: white;
 }
 
-/* Disable expand/collapse animation during initial load */
-body.no-anim details::details-content {
-    transition-duration: 0s !important;
+.drag {
+    opacity: 0.8;
 }

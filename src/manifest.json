@@ -15,6 +15,10 @@
         "storage",
         "tabs"
     ],
+    "host_permissions": [
+        "*://*.google.com/*",
+        "*://*.gstatic.com/*"
+    ],
     "chrome_url_overrides": {
         "newtab": "newtab.html"
     },

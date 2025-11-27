@@ -85,23 +85,6 @@ export async function loadAndApplyBackground(): Promise<void> {
 }
 
 
-export function applyThreadSettings(settings: Partial<SettingsType>) {
-    const threadWidth = settings.threadWidth ?? 300;
-    const threadOpacity = settings.threadOpacity ?? 0.5;
-    const threadBlur = settings.threadBlur ?? 10;
-
-    (document.querySelectorAll(".thread") as NodeListOf<HTMLElement>).forEach((t) => {
-        (t as HTMLElement).style.width = `${threadWidth}px`;
-    });
-
-    (document.querySelectorAll(".thread-overlay") as NodeListOf<HTMLElement>).forEach((t) => {
-        const el = t as HTMLElement;
-        el.style.opacity = `${threadOpacity}`;
-        el.style.filter = `blur(${threadBlur}px)`;
-    });
-}
-
-
 /**
  * store the state of a list (expanded/collapsed)
  */

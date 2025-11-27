@@ -2,9 +2,6 @@ importScripts('data.js')
 
 const defaultSettings = {
     locked: false,
-    threadWidth: 300,
-    threadOpacity: 0.9,
-    threadBlur: 40,
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -14,7 +11,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     const settings = await hasSettings();
 
     if (!data) {
-        await storeData(defaultData);
+        await storeData(DEFAULT_DATA);
     }
 
     if (!settings) {
@@ -44,7 +41,7 @@ function receiveMessage(request, _, sendResponse) {
     };
 
     switch (request.action) {
-        case "data":
+        case "get data":
             getData().then((data) => {
                 sendResponse({ data: data, response: true });
             }).catch(err => {
@@ -53,6 +50,17 @@ function receiveMessage(request, _, sendResponse) {
             });
             return true;
 
+        case "set data":
+            const data = request.data;
+            if (!data) {
+                throw Error("set data: invalid")
+            }
+
+            storeData(data)
+                .then(() => sendResponse({ data: true }))
+                .catch(err => sendResponse({ data: false, error: err }));
+
+            return true;
         case "get settings":
             getSettings().then(settings => {
                 sendResponse({ settings: settings });
@@ -72,14 +80,6 @@ function receiveMessage(request, _, sendResponse) {
 
         case "insert thread":
             processSet(insertThread(request));
-            return true;
-
-        case "insert list":
-            processSet(insertList(request));
-            return true;
-
-        case "edit list":
-            processSet(editList(request));
             return true;
 
         case "insert cell":
@@ -102,8 +102,13 @@ function receiveMessage(request, _, sendResponse) {
             processSet(deleteThread(request));
             return true;
 
-        case "delete list":
-            processSet(deleteList(request));
+        case "fetch favicon":
+            fetchFavicon(request.url)
+                .then((dataUrl) => sendResponse({ dataUrl }))
+                .catch(err => {
+                    console.error('Favicon fetch failed', err);
+                    sendResponse({ error: err?.message || 'Unknown error' });
+                });
             return true;
 
         default:
@@ -159,70 +164,6 @@ async function deleteThread(request) {
     let data = await getData();
     data = data.filter((th) => th.uuid !== threadUuid)
     await storeData(data);
-}
-
-
-/**
- * delete a list
- * @param {Object} request 
- */
-async function deleteList(request) {
-    const listUuid = request.list;
-    if (!listUuid) {
-        throw new Error("the provided List UUID is invalid")
-    }
-
-    let data = await getData();
-
-    data = data.map(th => {
-        th.children = th.children.filter(lst => lst.uuid !== listUuid)
-        return th;
-    })
-
-    await storeData(data);
-}
-
-
-/**
- * insert a list into a thread
- * @param {Object} request 
- */
-async function insertList(request) {
-    const uuid = request.thread;
-    let data = await getData();
-
-    for (let thread of data) {
-        if (thread.uuid === uuid) {
-            thread.children.push(request.list);
-            await storeData(data);
-            return;
-        }
-    }
-
-    throw new Error("Error while trying to insert a List");
-}
-
-
-/**
- * edit a list
- * @param {Object} request 
- */
-async function editList(request) {
-    const editedList = request.list;
-    let data = await getData();
-
-    for (let thread of data) {
-        for (let list of thread.children) {
-            if (list.uuid === editedList.uuid) {
-                list.title = editedList.title;
-                console.log(list);
-                await storeData(data);
-                return;
-            }
-        }
-    }
-
-    throw new Error("Error while trying to insert a List");
 }
 
 
@@ -421,4 +362,39 @@ async function getSettings() {
 async function hasSettings() {
     const result = await chrome.storage.local.get(['settings']);
     return result.settings !== undefined && result.settings !== null;
+}
+
+/**
+ * Fetch favicon and return as data URL
+ * @param {string} url
+ * @returns {Promise<string>}
+ */
+async function fetchFavicon(url) {
+    if (!url) {
+        throw new Error('No favicon url provided');
+    }
+
+    const response = await fetch(url, { cache: 'force-cache' });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const base64 = arrayBufferToBase64(buffer);
+    return `data:${contentType};base64,${base64}`;
+}
+
+/**
+ * Convert an ArrayBuffer to base64 string
+ * @param {ArrayBuffer} buffer
+ * @returns {string}
+ */
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
 }

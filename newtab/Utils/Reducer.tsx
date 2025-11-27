@@ -1,66 +1,49 @@
-import { CellType, ListType, ThreadType } from "../Utils/Types";
+import { CellType, ThreadType } from "../Utils/Types";
+import { saveData } from "../Utils/Data";
 
 export type Action =
     | { type: 'SET_DATA'; payload: ThreadType[] }
     | { type: 'ADD_THREAD'; payload: ThreadType }
     | { type: 'EDIT_THREAD'; payload: ThreadType }
     | { type: 'DELETE_THREAD'; payload: string } // payload is thread UUID
-    | { type: 'ADD_LIST'; payload: { threadUuid: string; list: ListType } }
-    | { type: 'EDIT_LIST'; payload: ListType }
-    | { type: 'DELETE_LIST'; payload: string } // payload is list UUID
-    | { type: 'ADD_CELL'; payload: { listUuid: string; cell: CellType } }
+    | { type: 'ADD_CELL'; payload: { threadUuid: string; cell: CellType } }
     | { type: 'EDIT_CELL'; payload: CellType }
     | { type: 'DELETE_CELL'; payload: string } // payload is cell UUID
     | { type: 'ADD_SUB_CELL'; payload: { parentCellUuid: string; cell: CellType } };
 
 
 export function reducer(state: ThreadType[], action: Action): ThreadType[] {
+    const persistState = (newState: ThreadType[]) => {
+        void saveData(newState);
+        return newState;
+    };
+
     switch (action.type) {
         case 'SET_DATA':
-            return action.payload;
+            if (action.payload) {
+                return action.payload;
+            } else {
+                throw new Error('SET_DATA payload is not defined');
+            }
 
         case 'ADD_THREAD':
-            return [...state, action.payload];
+            return persistState([...state, action.payload]);
 
         case 'EDIT_THREAD':
-            return state.map(thread =>
+            return persistState(state.map(thread =>
                 thread.uuid === action.payload.uuid ? action.payload : thread
-            );
+            ));
 
         case 'DELETE_THREAD':
-            return state.filter(thread => thread.uuid !== action.payload);
-
-        case 'ADD_LIST':
-            return state.map(thread =>
-                thread.uuid === action.payload.threadUuid
-                    ? { ...thread, children: [...thread.children, action.payload.list] }
-                    : thread
-            );
-
-        case 'EDIT_LIST':
-            return state.map(thread => ({
-                ...thread,
-                children: thread.children.map(list =>
-                    list.uuid === action.payload.uuid ? action.payload : list
-                )
-            }));
-
-        case 'DELETE_LIST':
-            return state.map(thread => ({
-                ...thread,
-                children: thread.children.filter(list => list.uuid !== action.payload)
-            }));
+            return persistState(state.filter(thread => thread.uuid !== action.payload));
 
         case 'ADD_CELL': {
-            const { listUuid, cell } = action.payload;
-            return state.map(thread => ({
-                ...thread,
-                children: thread.children.map(list =>
-                    list.uuid === listUuid
-                        ? { ...list, children: [...list.children, cell] }
-                        : list
-                )
-            }));
+            const { threadUuid, cell } = action.payload;
+            return persistState(state.map(thread =>
+                thread.uuid === threadUuid
+                    ? { ...thread, children: [...thread.children, cell] }
+                    : thread
+            ));
         }
 
         case 'EDIT_CELL': {
@@ -77,13 +60,10 @@ export function reducer(state: ThreadType[], action: Action): ThreadType[] {
                 });
             };
 
-            return state.map(thread => ({
+            return persistState(state.map(thread => ({
                 ...thread,
-                children: thread.children.map(list => ({
-                    ...list,
-                    children: findAndEditCell(list.children)
-                }))
-            }));
+                children: findAndEditCell(thread.children)
+            })));
         }
 
         case 'DELETE_CELL': {
@@ -97,13 +77,10 @@ export function reducer(state: ThreadType[], action: Action): ThreadType[] {
                     }));
             };
 
-            return state.map(thread => ({
+            return persistState(state.map(thread => ({
                 ...thread,
-                children: thread.children.map(list => ({
-                    ...list,
-                    children: removeCell(list.children || [])
-                }))
-            }));
+                children: removeCell(thread.children || [])
+            })));
         }
 
         case 'ADD_SUB_CELL': {
@@ -120,13 +97,10 @@ export function reducer(state: ThreadType[], action: Action): ThreadType[] {
                 });
             };
 
-            return state.map(thread => ({
+            return persistState(state.map(thread => ({
                 ...thread,
-                children: thread.children.map(list => ({
-                    ...list,
-                    children: findAndAddSubCell(list.children)
-                }))
-            }));
+                children: findAndAddSubCell(thread.children)
+            })));
         }
 
         default:

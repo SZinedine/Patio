@@ -1,4 +1,4 @@
-import { CellType, ListType, SettingsType, ThreadType } from "./Types";
+import { CellType, HistoryType, SettingsType, ThreadType } from "./Types";
 
 type defaultValueType = [] | {};
 
@@ -39,7 +39,12 @@ async function sendRuntimeMessage(request: object): Promise<{ data: any }> {
 
 
 export async function fetchData(): Promise<ThreadType[]> {
-    return fetchFromStorage("data", "data");
+    return fetchFromStorage("get data", "data");
+}
+
+
+export async function saveData(data: ThreadType[]) {
+    return sendRuntimeMessage({ action: "set data", data: data });
 }
 
 
@@ -60,16 +65,6 @@ export async function editThread(thread: ThreadType) {
 
 export async function insertThread(thread: ThreadType) {
     return sendRuntimeMessage({ action: "insert thread", thread });
-}
-
-
-export async function insertList(threadUuid: string, list: ListType) {
-    return sendRuntimeMessage({ action: "insert list", list, thread: threadUuid });
-}
-
-
-export async function editList(list: ListType) {
-    return sendRuntimeMessage({ action: "edit list", list });
 }
 
 
@@ -99,6 +94,105 @@ export async function deleteThread(threadUuid: string) {
 }
 
 
-export async function deleteList(listUuid: string) {
-    return sendRuntimeMessage({ action: "delete list", list: listUuid });
-}
+export const getHistory = async (): Promise<HistoryType[]> => {
+    return [
+        { uuid: 'h1', title: 'React Documentation', url: 'https://reactjs.org', },
+        { uuid: 'h2', title: 'Tailwind CSS', url: 'https://tailwindcss.com', },
+        { uuid: 'h3', title: 'TypeScript', url: 'https://www.typescriptlang.org', },
+        { uuid: 'h4', title: 'Vite', url: 'https://vitejs.dev', },
+        { uuid: 'h5', title: 'MDN Web Docs', url: 'https://developer.mozilla.org', },
+    ];
+};
+
+export const getBookmarks = async (): Promise<HistoryType[]> => {
+    return [
+        { uuid: 'b1', title: 'Hacker News', url: 'https://news.ycombinator.com' },
+        { uuid: 'b2', title: 'Product Hunt', url: 'https://producthunt.com' },
+        { uuid: 'b3', title: 'Dribbble', url: 'https://dribbble.com' },
+    ]
+};
+
+
+
+function openDb(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('patio-favicons', 1);
+
+        request.onupgradeneeded = () => {
+            request.result.createObjectStore('icons');
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+};
+
+
+export async function getCachedIcon(iconCacheKey: string) {
+    const db = await openDb();
+    return new Promise<string | null>((resolve, reject) => {
+        const tx = db.transaction('icons', 'readonly');
+        const store = tx.objectStore('icons');
+        const req = store.get(iconCacheKey);
+
+        req.onsuccess = () => {
+            const blob = req.result as Blob | undefined;
+            if (!blob) {
+                resolve(null);
+                return;
+            }
+            const objectUrl = URL.createObjectURL(blob);
+            resolve(objectUrl);
+        };
+        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => db.close();
+    });
+};
+
+
+export async function storeIcon(iconCacheKey: string, blob: Blob) {
+    const db = await openDb();
+    return new Promise<void>((resolve, reject) => {
+        const tx = db.transaction('icons', 'readwrite');
+        const store = tx.objectStore('icons');
+        const req = store.put(blob, iconCacheKey);
+
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => db.close();
+    });
+};
+
+
+export async function fetchIconFromBackground(faviconUrl: string): Promise<string | null> {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: 'fetch favicon', url: faviconUrl }, (response) => {
+            const err = chrome.runtime.lastError;
+            if (err) {
+                reject(new Error(err.message));
+                return;
+            }
+            if (response?.error || !response?.dataUrl) {
+                reject(new Error(response?.error || 'No data returned'));
+                return;
+            }
+            resolve(response.dataUrl as string);
+        }
+        );
+    });
+};
+
+
+export function dataUrlToBlob(dataUrl: string): Blob {
+    const [meta, base64] = dataUrl.split(',');
+    const mimeMatch = /data:(.*?);base64/.exec(meta);
+    const mime = mimeMatch?.[1] || 'image/png';
+    const bytes = atob(base64);
+    const len = bytes.length;
+    const arr = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        arr[i] = bytes.charCodeAt(i);
+    }
+    return new Blob([arr], { type: mime });
+};
+

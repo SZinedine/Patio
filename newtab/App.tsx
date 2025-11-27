@@ -1,162 +1,211 @@
-import { ReactElement, RefObject, useEffect, useReducer, useRef, useState } from "react";
-import { CellType, ListType, ThreadType } from "./Utils/Types";
-import { fetchData, fetchSettings } from "./Utils/Data";
-import Thread from "./Components/Thread";
-import SettingsDialog from "./Dialogs/SettingsDialog";
-import { FiMenu } from "react-icons/fi";
-import ThreadAddingDialog from "./Dialogs/ThreadAddingDialog";
-import ListAddingDialog from "./Dialogs/ListAddingDialog";
-import CellAddingDialog from "./Dialogs/CellAddingDialog";
-import Lock from "./Components/Lock";
+import { useState, useEffect, useReducer, useRef } from 'react';
+import { Thread } from './Components/Thread';
+import { Settings as SettingsIcon, Plus, LayoutGrid, Loader } from 'lucide-react';
+import { CellType, createThread, SettingsType, ThreadType } from './Utils/Types';
+import { fetchData, fetchSettings, saveData, saveSettings } from './Utils/Data';
+import { AddCellModal } from './Modals/AddCellModal';
+import { SettingsModal } from './Modals/SettingsModal';
+import Lock from './Components/Lock';
 import { LockContext } from "./Context/LockContext";
-import { EntityContext } from "./Context/EntityContext";
-import { applyThreadSettings } from "./Utils/SettingsUtils";
-import { reducer } from "./state/reducer";
-import { DialogContext, useDialogs } from "./Context/DialogContext";
+import { reducer } from './Utils/Reducer';
+import { DataContext } from './Context/DataContext';
+import Sortable from 'sortablejs';
 
-
-export default function App(): ReactElement {
+export default function App() {
+    // Application State
     const [data, dispatch] = useReducer(reducer, []);
-    const [locked, setLocked] = useState<boolean>(false);
+    const [settings, setSettings] = useState<SettingsType | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [locked, setLocked] = useState<boolean>(true);
+    const threadsRef = useRef(null);
+    const sortable = useRef<Sortable | null>(null);
 
-    // Dialogs state
-    const [editingThread, setEditingThread] = useState<ThreadType | undefined>(undefined);
-    const [editingList, setEditingList] = useState<ListType | undefined>(undefined);
-    const [editingCell, setEditingCell] = useState<CellType | undefined>(undefined);
-    const [listDialogThreadUuid, setListDialogThreadUuid] = useState<string | null>(null);
-    const [cellDialogData, setCellDialogData] = useState<{ parentListUuid: string, parentCellUuid?: string } | undefined>(undefined);
+    // Modal State
+    const [activeModal, setActiveModal] = useState<'add-cell' | 'settings' | null>(null);
+    const [targetThreadId, setTargetThreadId] = useState<string | null>(null);
 
-    const listAddingDialogRef = useRef<HTMLDialogElement>(null);
-    const threadAddingDialogRef = useRef<HTMLDialogElement>(null);
-    const cellAddingDialogRef = useRef<HTMLDialogElement>(null);
-    const settingsDialogRef = useRef<HTMLDialogElement>(null);
-
+    // Initialization
     useEffect(() => {
-        fetchData()
-            .then((data_: ThreadType[]) => {
-                dispatch({ type: 'SET_DATA', payload: data_ });
-                setTimeout(() => document.body.classList.remove("no-anim"), 200);
-            })
-            .catch(err => console.error("Error fetching initial data:", err));
-    }, []);
-
-    useEffect(() => {
-        const applySettingsForThreads = async () => {
+        const init = async () => {
             try {
-                const settings = await fetchSettings();
-                applyThreadSettings(settings);
-            } catch (e) {
-                console.error("Failed to apply settings:", e);
+                const [data_, settings_] = await Promise.all([
+                    fetchData(),
+                    fetchSettings()
+                ]);
+                dispatch({ type: 'SET_DATA', payload: data_ });
+                setSettings(settings_);
+            } catch (error) {
+                console.error("Failed to load data", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        if (data.length > 0) {
-            applySettingsForThreads();
-        }
-    }, [data.length]);
+        init();
+    }, []);
 
-    // use this for closing list and cell dialogs
-    const handleListDialogClose = () => {
-        setListDialogThreadUuid(null);
-        setEditingList(undefined);
+    // Persistence Effects
+    useEffect(() => {
+        if (!isLoading && data.length >= 0) {
+            saveData(data);
+        }
+    }, [data, isLoading]);
+
+    useEffect(() => {
+        if (!isLoading && settings) {
+            saveSettings(settings);
+        }
+    }, [settings, isLoading]);
+
+    useEffect(() => {
+        if (!threadsRef.current) {
+            return;
+        }
+
+        sortable.current = Sortable.create(threadsRef.current, {
+            animation: 250,
+            delay: 40,
+            ghostClass: "ghost",
+            chosenClass: "chosen",
+            dragClass: "drag",
+            filter: ".no-drag",
+            onEnd: ({ oldIndex, newIndex }) => {
+                if (oldIndex == null || newIndex == null) {
+                    return;
+                }
+
+                const updated = [...data];
+                const [moved] = updated.splice(oldIndex, 1);
+                updated.splice(newIndex, 0, moved);
+                dispatch({ type: 'SET_DATA', payload: updated });
+            }
+        });
+
+        return () => sortable.current?.destroy();
+    }, [isLoading, data]);
+
+
+    useEffect(() => {
+        if (!isLoading && sortable.current) {
+            sortable.current.option("disabled", locked);
+        }
+    }, [locked]);
+
+    // Handlers
+    const handleAddThread = () => {
+        const newThread = createThread("New Thread");
+        dispatch({ type: 'ADD_THREAD', payload: newThread });
     };
 
-    const handleCellDialogClose = () => {
-        setCellDialogData(undefined);
-        setEditingCell(undefined);
-    }
-
-    const handleThreadDialogClose = () => {
-        setEditingThread(undefined);
-    }
-
-    const dialogContextValue = {
-        showThreadDialog: (thread?: ThreadType) => {
-            setEditingThread(thread);
-            threadAddingDialogRef.current?.showModal();
-        },
-
-        showListDialog: (threadUuid: string, list?: ListType) => {
-            setListDialogThreadUuid(threadUuid);
-            setEditingList(list);
-            listAddingDialogRef.current?.showModal();
-        },
-
-        showCellDialog: (parentListUuid: string, parentCellUuid?: string, cell?: CellType) => {
-            setCellDialogData({ parentListUuid, parentCellUuid });
-            setEditingCell(cell);
-            cellAddingDialogRef.current?.showModal();
-        }
+    const handleOpenAddCell = (threadId: string) => {
+        setTargetThreadId(threadId);
+        setActiveModal('add-cell');
     };
 
-    const threads = data.map((tr: ThreadType) => (
-        <Thread
-            key={tr.uuid}
-            {...tr}
-        />
-    ));
+    const handleAddCell = (cell: CellType) => {
+        if (!targetThreadId)
+            return;
 
-    const dialogs = (
-        <>
-            <SettingsDialog dialogRef={settingsDialogRef} />
-            <ThreadAddingDialog
-                thread={editingThread}
-                onClose={handleThreadDialogClose}
-                dialogRef={threadAddingDialogRef}
-            />
-            <ListAddingDialog
-                threadUuid={listDialogThreadUuid}
-                onClose={handleListDialogClose}
-                list={editingList}
-                dialogRef={listAddingDialogRef}
-            />
-            <CellAddingDialog
-                cell={editingCell}
-                cellDialogData={cellDialogData}
-                onClose={handleCellDialogClose}
-                dialogRef={cellAddingDialogRef}
-            />
-        </>
-    );
+        dispatch({ type: 'ADD_CELL', payload: { threadUuid: targetThreadId, cell: cell } });
+        setActiveModal(null);
+        setTargetThreadId(null);
+    };
+
+    if (isLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-gray-900 text-white">
+                <Loader className="animate-spin" />
+            </div>
+        );
+    }
 
     return <LockContext.Provider value={{ locked, setLocked }}>
-        <EntityContext.Provider value={{ dispatch }}>
-            <DialogContext.Provider value={dialogContextValue}>
-                <div className="z-0 h-[90vh] w-[90vw]">
-                    <div className="threads h-full w-full center flex flex-row justify-center p-3 gap-5">
-                        {threads}
-                    </div>
-                </div>
-                <div className="buttons float-end flex flex-col justify-between">
-                    <HamburgerMenu
-                        settingsDialogRef={settingsDialogRef} />
+        <DataContext.Provider value={{ dispatch }}>
+            <div className="relative h-screen w-screen overflow-hidden bg-cover bg-center transition-all duration-500">
+
+                {/* Dark Overlay for readability */}
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px]" />
+
+                {/* Main Content */}
+                <div className="relative z-10 h-full flex flex-col">
+
+                    {/* Header */}
+                    <header className="flex-none px-8 py-6 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-lg">
+                                <LayoutGrid className="text-white" size={24} />
+                            </div>
+                            <h1 className="text-2xl font-bold text-white tracking-tight drop-shadow-md">Patio</h1>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setActiveModal('settings')}
+                                className="p-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80
+                                       hover:text-white backdrop-blur-md border border-white/10
+                                       transition-all hover:scale-105 active:scale-95">
+                                <SettingsIcon size={20} />
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Threads Container */}
+                    <main className="flex-1 overflow-x-auto overflow-y-hidden px-8 pb-8">
+                        <div ref={threadsRef} className="h-full flex flex-nowrap gap-6 justify-center">
+                            {
+                                data.map((thread: ThreadType) => (
+                                    <Thread
+                                        key={thread.uuid}
+                                        data={thread}
+                                        onAddCell={handleOpenAddCell}
+                                    />
+                                ))
+                            }
+
+                            {/* Add Thread Button */}
+                            {!locked &&
+                                <div className="no-drag flex flex-col w-16 shrink-0 h-full pt-11">
+                                    <button
+                                        onClick={handleAddThread}
+                                        title="Add New Thread"
+                                        className="w-12 h-full max-h-[80vh] rounded-2xl border-2 border-dashed
+                                           border-white/20 hover:border-white/50 hover:bg-white/5 flex
+                                           flex-col items-center justify-center gap-4 text-white/40 hover:text-white transition-all group" >
+                                        <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/20 transition-colors">
+                                            <Plus size={24} />
+                                        </div>
+                                        <span
+                                            className="vertical-text text-sm font-medium tracking-widest opacity-0
+                                               group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
+                                            style={{ writingMode: 'vertical-rl' }}
+                                        > NEW THREAD
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </main>
+
+                    {/* Lock Button */}
                     <Lock />
+
                 </div>
-                {dialogs}
-            </DialogContext.Provider>
-        </EntityContext.Provider>
+
+
+                {/* Modals */}
+                <AddCellModal
+                    isOpen={activeModal === 'add-cell'}
+                    onClose={() => setActiveModal(null)}
+                    onAdd={handleAddCell}
+                />
+                <SettingsModal
+                    isOpen={activeModal === 'settings'}
+                    onClose={() => setActiveModal(null)}
+                    settings={settings}
+                    onSave={setSettings}
+                />
+            </div>
+        </DataContext.Provider>
     </LockContext.Provider>
-}
+};
 
-type HamburgerMenuProps = {
-    settingsDialogRef: RefObject<HTMLDialogElement | null>;
-}
-
-function HamburgerMenu({ settingsDialogRef }: HamburgerMenuProps) {
-    const { showThreadDialog } = useDialogs();
-    const showSettingDialog = () => {
-        settingsDialogRef.current?.showModal()
-    }
-
-    const showThreadAddingDialog = () => {
-        showThreadDialog();
-    }
-
-    return <div className="dropdown dropdown-left dropdown-start float-end h-1/3">
-        <div tabIndex={0} role="button" className="m-1 p-2 cursor-pointer"><FiMenu size={22} className="menu-icon" /></div>
-        <ul tabIndex={-1} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-            <li><button onClick={showSettingDialog}>Settings</button></li>
-            <li><button onClick={showThreadAddingDialog}>Add New Thread</button></li>
-        </ul>
-    </div>
-}
