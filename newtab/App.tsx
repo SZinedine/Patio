@@ -45,6 +45,24 @@ export default function App() {
         init();
     }, []);
 
+    // Storage Change Listener to prevent multiple tabs desync
+    useEffect(() => {
+        function handleChange(
+            changes: { [key: string]: chrome.storage.StorageChange },
+            area: string
+        ) {
+            if (area === "local" && changes.data) {
+                const newData = changes.data.newValue;
+                if (newData) {
+                    dispatch({ type: 'SET_DATA', payload: newData });
+                }
+            }
+        }
+
+        chrome.storage.onChanged.addListener(handleChange);
+        return () => chrome.storage.onChanged.removeListener(handleChange);
+    }, []);
+
     // Persistence Effects
     useEffect(() => {
         if (!isLoading && data.length >= 0) {

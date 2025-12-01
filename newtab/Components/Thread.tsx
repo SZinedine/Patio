@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, FC } from 'react';
 import { CellType, ThreadType } from '../Utils/Types';
 import { Cell } from './Cell';
 import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
@@ -12,7 +12,7 @@ interface ThreadProps {
     onEditCell: (cell: CellType) => void;
 }
 
-export const Thread: React.FC<ThreadProps> = ({ data, onAddCell, onEditCell }) => {
+export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [editing, setEditing] = useState(false);
     const [title, setTitle] = useState(data.title);
