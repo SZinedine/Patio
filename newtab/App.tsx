@@ -3,7 +3,7 @@ import { Thread } from './Components/Thread';
 import { Settings as SettingsIcon, Plus, LayoutGrid, Loader } from 'lucide-react';
 import { CellType, createThread, SettingsType, ThreadType } from './Utils/Types';
 import { fetchData, fetchSettings, saveData, saveSettings } from './Utils/Data';
-import { AddCellModal } from './Modals/AddCellModal';
+import { CellModal } from './Modals/CellModal';
 import { SettingsModal } from './Modals/SettingsModal';
 import Lock from './Components/Lock';
 import { LockContext } from "./Context/LockContext";
@@ -17,6 +17,7 @@ export default function App() {
     const [settings, setSettings] = useState<SettingsType | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [locked, setLocked] = useState<boolean>(true);
+    const [cellToEdit, setCellToEdit] = useState<CellType | null>(null);
     const threadsRef = useRef(null);
     const sortable = useRef<Sortable | null>(null);
 
@@ -57,6 +58,14 @@ export default function App() {
         }
     }, [settings, isLoading]);
 
+    // Ensure modals reset state on close
+    useEffect(() => {
+        if (activeModal === null) {
+            setTargetThreadId(null);
+            setCellToEdit(null);
+        }
+    }, [activeModal]);
+
     useEffect(() => {
         if (!threadsRef.current) {
             return;
@@ -85,7 +94,6 @@ export default function App() {
         return () => sortable.current?.destroy();
     }, [isLoading, data, locked]);
 
-
     // Handlers
     const handleAddThread = () => {
         const newThread = createThread("New Thread");
@@ -97,13 +105,31 @@ export default function App() {
         setActiveModal('add-cell');
     };
 
+    const handleOpenEditCell = (cell: CellType) => {
+        if (!cell) {
+            console.error("Cell data is required to add a cell.");
+        }
+
+        setCellToEdit(cell);
+        setActiveModal('add-cell');
+    };
+
     const handleAddCell = (cell: CellType) => {
         if (!targetThreadId)
             return;
 
         dispatch({ type: 'ADD_CELL', payload: { threadUuid: targetThreadId, cell: cell } });
         setActiveModal(null);
-        setTargetThreadId(null);
+    };
+
+    const handleEditCell = (cell: CellType) => {
+        if (!cellToEdit) {
+            console.warn("did not edit a cell")
+            return;
+        }
+
+        dispatch({ type: 'EDIT_CELL', payload: cell });
+        setActiveModal(null);
     };
 
     if (isLoading) {
@@ -153,6 +179,7 @@ export default function App() {
                                         key={thread.uuid}
                                         data={thread}
                                         onAddCell={handleOpenAddCell}
+                                        onEditCell={handleOpenEditCell}
                                     />
                                 ))
                             }
@@ -188,10 +215,12 @@ export default function App() {
 
 
                 {/* Modals */}
-                <AddCellModal
+                <CellModal
                     isOpen={activeModal === 'add-cell'}
                     onClose={() => setActiveModal(null)}
                     onAdd={handleAddCell}
+                    onEdit={handleEditCell}
+                    cell={cellToEdit}
                 />
                 <SettingsModal
                     isOpen={activeModal === 'settings'}

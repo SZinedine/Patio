@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ThreadType } from '../Utils/Types';
+import { CellType, ThreadType } from '../Utils/Types';
 import { Cell } from './Cell';
 import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { useLock } from '../Context/LockContext';
@@ -9,9 +9,10 @@ import Sortable from 'sortablejs';
 interface ThreadProps {
     data: ThreadType;
     onAddCell: (threadId: string) => void;
+    onEditCell: (cell: CellType) => void;
 }
 
-export const Thread: React.FC<ThreadProps> = ({ data, onAddCell }) => {
+export const Thread: React.FC<ThreadProps> = ({ data, onAddCell, onEditCell }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [editing, setEditing] = useState(false);
     const [title, setTitle] = useState(data.title);
@@ -169,6 +170,7 @@ export const Thread: React.FC<ThreadProps> = ({ data, onAddCell }) => {
                                 <Cell
                                     key={cell.uuid}
                                     data={cell}
+                                    onEdit={onEditCell}
                                 />
                             ))
                         )
