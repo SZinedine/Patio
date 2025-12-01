@@ -59,16 +59,12 @@ export const Thread: React.FC<ThreadProps> = ({ data, onAddCell }) => {
             chosenClass: "chosen",   // class when selected
             dragClass: "drag",       // class while dragging item
             filter: ".no-drag",      // class for non dragging elements
+            disabled: lock.locked,
             onEnd: sortableFunctions.onEnd,
         });
 
         return () => sortable.current?.destroy();
-    }, [sortable.current]);
-
-
-    useEffect(() => {
-        sortable.current?.option("disabled", lock.locked);
-    }, [lock.locked]);
+    }, [sortable.current, lock.locked]);
 
 
     useEffect(() => {

@@ -30,7 +30,6 @@ html, body {
 }
 
 .chosen {
-    border: solid 1px gray;
     opacity: 1.0;
     color: white;
 }

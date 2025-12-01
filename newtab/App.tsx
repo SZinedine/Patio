@@ -69,6 +69,7 @@ export default function App() {
             chosenClass: "chosen",
             dragClass: "drag",
             filter: ".no-drag",
+            disabled: locked,
             onEnd: ({ oldIndex, newIndex }) => {
                 if (oldIndex == null || newIndex == null) {
                     return;
@@ -82,14 +83,8 @@ export default function App() {
         });
 
         return () => sortable.current?.destroy();
-    }, [isLoading, data]);
+    }, [isLoading, data, locked]);
 
-
-    useEffect(() => {
-        if (!isLoading && sortable.current) {
-            sortable.current.option("disabled", locked);
-        }
-    }, [locked]);
 
     // Handlers
     const handleAddThread = () => {
