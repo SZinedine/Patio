@@ -3,7 +3,7 @@ import { Thread } from './Components/Thread';
 import { Settings as SettingsIcon, Plus, LayoutGrid, Loader } from 'lucide-react';
 import { CellType, createThread, SettingsType, ThreadType } from './Utils/Types';
 import { fetchData, fetchSettings, saveData, saveSettings } from './Utils/Data';
-import { CellModal } from './Modals/CellModal';
+import { CellModal, CellModalModeType } from './Modals/CellModal';
 import { SettingsModal } from './Modals/SettingsModal';
 import Lock from './Components/Lock';
 import { LockContext } from "./Context/LockContext";
@@ -17,13 +17,15 @@ export default function App() {
     const [settings, setSettings] = useState<SettingsType | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [locked, setLocked] = useState<boolean>(true);
-    const [cellToEdit, setCellToEdit] = useState<CellType | null>(null);
     const threadsRef = useRef(null);
     const sortable = useRef<Sortable | null>(null);
 
     // Modal State
-    const [activeModal, setActiveModal] = useState<'add-cell' | 'settings' | null>(null);
+    const [activeModal, setActiveModal] = useState<'add-cell' | 'settings' | null>(null);   // TODO: delete this
     const [targetThreadId, setTargetThreadId] = useState<string | null>(null);
+    const [cellModalMode, setCellModalMode] = useState<CellModalModeType>("");
+    const [cellToEdit, setCellToEdit] = useState<CellType | null>(null);
+    const [parentCell, setParentCell] = useState<string | null>(null);
 
     // Initialization
     useEffect(() => {
@@ -78,11 +80,11 @@ export default function App() {
 
     // Ensure modals reset state on close
     useEffect(() => {
-        if (activeModal === null) {
+        if (cellModalMode === "") {
             setTargetThreadId(null);
             setCellToEdit(null);
         }
-    }, [activeModal]);
+    }, [cellModalMode]);
 
     useEffect(() => {
         if (!threadsRef.current) {
@@ -120,24 +122,43 @@ export default function App() {
 
     const handleOpenAddCell = (threadId: string) => {
         setTargetThreadId(threadId);
-        setActiveModal('add-cell');
+        setCellModalMode('add-cell');
+    };
+
+    const handleOpenAddSubCell = (cellUuid: string) => {
+        setParentCell(cellUuid)
+        setCellModalMode('add-subcell');
     };
 
     const handleOpenEditCell = (cell: CellType) => {
         if (!cell) {
             console.error("Cell data is required to add a cell.");
+            alert("Cell data is required to add a cell.");
+            return;
         }
 
         setCellToEdit(cell);
-        setActiveModal('add-cell');
+        setCellModalMode('edit');
     };
 
     const handleAddCell = (cell: CellType) => {
-        if (!targetThreadId)
-            return;
+        if (cellModalMode === "add-cell") {
+            if (!targetThreadId) {
+                console.error("no target thread to add the new cell to");
+                return;
+            }
 
-        dispatch({ type: 'ADD_CELL', payload: { threadUuid: targetThreadId, cell: cell } });
-        setActiveModal(null);
+            dispatch({ type: 'ADD_CELL', payload: { threadUuid: targetThreadId, cell: cell } });
+        } else if (cellModalMode === "add-subcell") {
+            if (!parentCell) {
+                console.error("no target parent cell to add the new cell to");
+                return;
+            }
+
+            dispatch({ type: 'ADD_SUB_CELL', payload: { parentCellUuid: parentCell, cell } });
+        }
+
+        setCellModalMode("");
     };
 
     const handleEditCell = (cell: CellType) => {
@@ -147,7 +168,7 @@ export default function App() {
         }
 
         dispatch({ type: 'EDIT_CELL', payload: cell });
-        setActiveModal(null);
+        setCellModalMode("");
     };
 
     if (isLoading) {
@@ -198,6 +219,7 @@ export default function App() {
                                         data={thread}
                                         onAddCell={handleOpenAddCell}
                                         onEditCell={handleOpenEditCell}
+                                        onAddSubCell={handleOpenAddSubCell}
                                     />
                                 ))
                             }
@@ -234,8 +256,8 @@ export default function App() {
 
                 {/* Modals */}
                 <CellModal
-                    isOpen={activeModal === 'add-cell'}
-                    onClose={() => setActiveModal(null)}
+                    mode={cellModalMode}
+                    onClose={() => setCellModalMode("")}
                     onAdd={handleAddCell}
                     onEdit={handleEditCell}
                     cell={cellToEdit}

@@ -1,33 +1,43 @@
 import React, { FormEvent, MouseEvent, useState, useEffect } from 'react';
 import { CellType, createCell } from '../Utils/Types';
 
+export type CellModalModeType = "" | "add-cell" | "add-subcell" | "edit";
+
 interface CellModalProps {
-    isOpen: boolean;
+    mode: CellModalModeType;
     onClose: () => void;
     onAdd: (cell: CellType) => void;
     onEdit: (cell: CellType) => void;
     cell: CellType | null;
 }
 
-export const CellModal: React.FC<CellModalProps> = ({ isOpen, onClose, onAdd, onEdit, cell }) => {
+export const CellModal: React.FC<CellModalProps> = ({ mode, onClose, onAdd, onEdit, cell }) => {
     const [link, setLink] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const ref = React.useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
-        if (isOpen) {
-            if (cell) {
-                setLink(cell.link);
-                setTitle(cell.title);
-                setDescription(cell.description);
-            } else {
-                clear();
+        if (mode === "") {
+            close(null);
+            return;
+        } else if (mode === "add-cell" || mode === "add-subcell") {
+            clear();
+        } else if (mode === "edit") {
+            if (!cell) {
+                console.error("CellModal opened in edit mode without a cell");
+                alert("CellModal opened in edit mode without a cell");
+                return;
             }
 
-            ref.current?.showModal();
+            setLink(cell.link);
+            setTitle(cell.title);
+            setDescription(cell.description);
+
         }
-    }, [isOpen]);
+
+        ref.current?.showModal();
+    }, [mode]);
 
     const handleManualSubmit = (e: FormEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -39,16 +49,21 @@ export const CellModal: React.FC<CellModalProps> = ({ isOpen, onClose, onAdd, on
             formattedUrl = 'https://' + link;
         }
 
-        if (cell) {
+        if (mode === "edit") {
+            if (!cell) {
+                console.error("CellModal opened in edit mode without a cell");
+                alert("CellModal opened in edit mode without a cell");
+                return;
+            }
+
             cell.link = formattedUrl;
             cell.title = title.trim() || new URL(formattedUrl).hostname;
             cell.description = description.trim() || title;
+
             onEdit(cell);
-        } else {
-            console.log("creating new one")
+        } else if (mode === "add-cell" || mode === "add-subcell") {
             const title_ = title.trim() || new URL(formattedUrl).hostname;
             const newCell = createCell(title_, formattedUrl, description.trim() || title_);
-            console.log(newCell);
             onAdd(newCell);
         }
 
@@ -56,8 +71,12 @@ export const CellModal: React.FC<CellModalProps> = ({ isOpen, onClose, onAdd, on
     };
 
 
-    const close = (e: MouseEvent<HTMLButtonElement> | MouseEvent<HTMLDialogElement>) => {
-        e.preventDefault();
+    const close = (e: MouseEvent<HTMLButtonElement> | MouseEvent<HTMLDialogElement> | null) => {
+        if (e) {
+            e.preventDefault();
+        }
+
+        ref.current?.close();
         clear();
         onClose();
     }
@@ -69,7 +88,7 @@ export const CellModal: React.FC<CellModalProps> = ({ isOpen, onClose, onAdd, on
     }
 
 
-    if (!isOpen) {
+    if (mode === "") {
         return null;
     }
 

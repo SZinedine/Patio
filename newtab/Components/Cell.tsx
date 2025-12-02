@@ -9,13 +9,14 @@ import { useDataContext } from '../Context/DataContext';
 interface CellProps {
     data: CellType;
     onEdit: (cell: CellType) => void;
+    onAddSubCell: (parentCellUuid: string) => void;
     isSubCell?: boolean;
 }
 
 const cellButtonClassName = "p-1.5 rounded-md text-gray-400 hover:text-white \
                              hover:bg-gray-400/10 transition-colors";
 
-export const Cell: React.FC<CellProps> = ({ data, onEdit, isSubCell = false }) => {
+export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCell = false }) => {
     const [iconSrc, setIconSrc] = useState<string | null>(null);
     const [isHoveringCell, setIsHoveringCell] = useState(false);
     const [isHoveringMenu, setIsHoveringMenu] = useState(false);
@@ -89,6 +90,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, isSubCell = false }) =
     const handleAddSubCell = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        onAddSubCell(data.uuid);
         // TODO
     };
 

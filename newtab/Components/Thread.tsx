@@ -10,9 +10,10 @@ interface ThreadProps {
     data: ThreadType;
     onAddCell: (threadId: string) => void;
     onEditCell: (cell: CellType) => void;
+    onAddSubCell: (parentCellUuid: string) => void;
 }
 
-export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell }) => {
+export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubCell }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [editing, setEditing] = useState(false);
     const [title, setTitle] = useState(data.title);
@@ -171,6 +172,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell }) => {
                                     key={cell.uuid}
                                     data={cell}
                                     onEdit={onEditCell}
+                                    onAddSubCell={onAddSubCell}
                                 />
                             ))
                         )
