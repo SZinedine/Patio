@@ -21,7 +21,7 @@ export default function App() {
     const sortable = useRef<Sortable | null>(null);
 
     // Modal State
-    const [activeModal, setActiveModal] = useState<'add-cell' | 'settings' | null>(null);   // TODO: delete this
+    const [openSettingsModal, setOpenSettingsModal] = useState(false);
     const [targetThreadId, setTargetThreadId] = useState<string | null>(null);
     const [cellModalMode, setCellModalMode] = useState<CellModalModeType>("");
     const [cellToEdit, setCellToEdit] = useState<CellType | null>(null);
@@ -200,7 +200,7 @@ export default function App() {
 
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => setActiveModal('settings')}
+                                onClick={() => setOpenSettingsModal(true)}
                                 className="p-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80
                                        hover:text-white backdrop-blur-md border border-white/10
                                        transition-all hover:scale-105 active:scale-95">
@@ -263,8 +263,8 @@ export default function App() {
                     cell={cellToEdit}
                 />
                 <SettingsModal
-                    isOpen={activeModal === 'settings'}
-                    onClose={() => setActiveModal(null)}
+                    isOpen={openSettingsModal}
+                    onClose={() => setOpenSettingsModal(false)}
                     settings={settings}
                     onSave={setSettings}
                 />
