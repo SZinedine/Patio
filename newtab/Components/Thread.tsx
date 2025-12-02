@@ -136,10 +136,8 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                     onAddCell(data.uuid);
                                     setIsMenuOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2 transition-colors"
-                            >
-                                <Plus size={14} />
-                                Add New Cell
+                                className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2 transition-colors" >
+                                <Plus size={14} /> Add New Cell
                             </button>
                             <div className="h-px bg-gray-700 my-0.5" />
                             <button
@@ -148,8 +146,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                     setIsMenuOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 flex items-center gap-2 transition-colors">
-                                <Trash2 size={14} />
-                                Delete Thread
+                                <Trash2 size={14} /> Delete Thread
                             </button>
                         </div>
                     )
