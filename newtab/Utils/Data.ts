@@ -58,62 +58,6 @@ export async function saveSettings(settings: SettingsType): Promise<{ data: bool
 }
 
 
-export async function editThread(thread: ThreadType) {
-    return sendRuntimeMessage({ action: "edit thread", thread });
-}
-
-
-export async function insertThread(thread: ThreadType) {
-    return sendRuntimeMessage({ action: "insert thread", thread });
-}
-
-
-export async function insertCell(listUuid: string, cell: CellType) {
-    return sendRuntimeMessage({ action: "insert cell", cell, list: listUuid });
-}
-
-
-export async function editCell(cell: CellType) {
-    return sendRuntimeMessage({ action: "edit cell", cell });
-}
-
-
-export async function deleteCell(cell: string) {
-    return sendRuntimeMessage({ action: "delete cell", cell: cell });
-}
-
-
-export async function insertSubCell(listUuid: string, cell: CellType, parentCell: string) {
-    return sendRuntimeMessage({ action: "insert subcell", cell: cell, list: listUuid, parentCell: parentCell });
-
-}
-
-
-export async function deleteThread(threadUuid: string) {
-    return sendRuntimeMessage({ action: "delete thread", thread: threadUuid });
-}
-
-
-export const getHistory = async (): Promise<HistoryType[]> => {
-    return [
-        { uuid: 'h1', title: 'React Documentation', url: 'https://reactjs.org', },
-        { uuid: 'h2', title: 'Tailwind CSS', url: 'https://tailwindcss.com', },
-        { uuid: 'h3', title: 'TypeScript', url: 'https://www.typescriptlang.org', },
-        { uuid: 'h4', title: 'Vite', url: 'https://vitejs.dev', },
-        { uuid: 'h5', title: 'MDN Web Docs', url: 'https://developer.mozilla.org', },
-    ];
-};
-
-export const getBookmarks = async (): Promise<HistoryType[]> => {
-    return [
-        { uuid: 'b1', title: 'Hacker News', url: 'https://news.ycombinator.com' },
-        { uuid: 'b2', title: 'Product Hunt', url: 'https://producthunt.com' },
-        { uuid: 'b3', title: 'Dribbble', url: 'https://dribbble.com' },
-    ]
-};
-
-
-
 function openDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('patio-favicons', 1);

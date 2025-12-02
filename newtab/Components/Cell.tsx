@@ -154,7 +154,14 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                     </h4>
                     <p className="text-xs text-gray-400 truncate">
                         {
-                            new URL(data.link).hostname
+                            (() => {
+                                try {
+                                    return new URL(data.link).hostname;
+                                } catch {
+                                    console.warn("invalid url in cell: " + data.link);
+                                    return data.link;
+                                }
+                            })()
                         }
                     </p>
                 </div>
@@ -209,6 +216,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                                         data={cell}
                                         isSubCell={true}
                                         onEdit={onEdit}
+                                        onAddSubCell={(_) => { }}  // Sub-cells cannot have their own sub-cells
                                     />
                                 ))}
                             </div>

@@ -2,7 +2,7 @@ import { useState, useEffect, useReducer, useRef } from 'react';
 import { Thread } from './Components/Thread';
 import { Settings as SettingsIcon, Plus, LayoutGrid, Loader } from 'lucide-react';
 import { CellType, createThread, SettingsType, ThreadType } from './Utils/Types';
-import { fetchData, fetchSettings, saveData, saveSettings } from './Utils/Data';
+import { fetchData, fetchSettings, saveSettings } from './Utils/Data';
 import { CellModal, CellModalModeType } from './Modals/CellModal';
 import { SettingsModal } from './Modals/SettingsModal';
 import Lock from './Components/Lock';
@@ -36,7 +36,12 @@ export default function App() {
                     fetchSettings()
                 ]);
                 dispatch({ type: 'SET_DATA', payload: data_ });
-                setSettings(settings_);
+                const loadedSettings = settings_ && typeof settings_.locked === "boolean"
+                    ? settings_
+                    : { locked: false };
+
+                setSettings(loadedSettings);
+                setLocked(Boolean(loadedSettings.locked));
             } catch (error) {
                 console.error("Failed to load data", error);
             } finally {
@@ -46,6 +51,7 @@ export default function App() {
 
         init();
     }, []);
+
 
     // Storage Change Listener to prevent multiple tabs desync
     useEffect(() => {
@@ -65,18 +71,25 @@ export default function App() {
         return () => chrome.storage.onChanged.removeListener(handleChange);
     }, []);
 
-    // Persistence Effects
-    useEffect(() => {
-        if (!isLoading && data.length >= 0) {
-            saveData(data);
-        }
-    }, [data, isLoading]);
-
     useEffect(() => {
         if (!isLoading && settings) {
             saveSettings(settings);
         }
     }, [settings, isLoading]);
+
+    useEffect(() => {
+        if (isLoading) {
+            return;
+        }
+
+        setSettings((prev) => {
+            const current = prev ?? { locked };
+            if (current.locked === locked) {
+                return current;
+            }
+            return { ...current, locked };
+        });
+    }, [locked, isLoading]);
 
     // Ensure modals reset state on close
     useEffect(() => {
@@ -272,4 +285,3 @@ export default function App() {
         </DataContext.Provider>
     </LockContext.Provider>
 };
-

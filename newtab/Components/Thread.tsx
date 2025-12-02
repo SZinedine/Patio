@@ -35,6 +35,8 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => setTitle(data.title), [data.title]);
+
     // Sortable
     useEffect(() => {
         if (!listRef.current) {
@@ -66,7 +68,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
         });
 
         return () => sortable.current?.destroy();
-    }, [sortable.current, lock.locked]);
+    }, [sortable.current, lock.locked, data.children]);
 
 
     useEffect(() => {
@@ -75,7 +77,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
         }
     }, [editing]);
 
-    const validateEdit = () => {
+    const validateTitleEdit = () => {
         dispatch({ type: "EDIT_THREAD", payload: { ...data, title: title } });
         setEditing(false);
     };
@@ -92,10 +94,10 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
             ref={inputRef}
             onChange={(e) => setTitle(e.target.value)}
             value={title}
-            onBlur={validateEdit}
+            onBlur={validateTitleEdit}
             onKeyDown={(e) => {
                 if (e.key === "Enter")
-                    validateEdit();
+                    validateTitleEdit();
                 if (e.key === "Escape") {
                     setTitle(data.title);
                     setEditing(false);
