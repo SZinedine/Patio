@@ -214,8 +214,8 @@ export default function App() {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setOpenSettingsModal(true)}
-                                className="p-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80
-                                       hover:text-white backdrop-blur-md border border-white/10
+                                className="p-2.5 rounded-lg bg-white/5 hover:bg-white/20 text-white
+                                       backdrop-blur-md border border-white/20
                                        transition-all hover:scale-105 active:scale-95">
                                 <SettingsIcon size={20} />
                             </button>

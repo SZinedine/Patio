@@ -93,8 +93,8 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
         return null;
     }
 
-    return <dialog ref={ref} className="modal modal-bottom sm:modal-middle backdrop-blur-xs animate-in fade-in duration-200" onClose={close}>
-        <div className="modal-box border border-gray-700 bg-base-100">
+    return <dialog ref={ref} className="modal modal-bottom sm:modal-middle animate-in fade-in duration-200" onClose={close}>
+        <div className="modal-box border border-base-100/30 bg-base-100/40 backdrop-blur-3xl">
             <h2 className="font-bold text-xl text-center">{cell ? 'Edit Cell' : 'New Cell'}</h2>
             <fieldset className="fieldset flex flex-col justify-center p-2">
 
@@ -102,10 +102,10 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
                 <InputLink ref={linkRef} value={link} setValue={setLink} />
 
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">TITLE</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder="Title" className="input self-center w-4/5 bg-base-200" />
+                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder="Title" className={inputCls} />
 
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">DESCRIPTION</label>
-                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder="Description" className="input self-center w-4/5 bg-base-200" />
+                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder="Description" className={inputCls} />
 
             </fieldset>
             <div className="modal-action">
@@ -118,6 +118,7 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
     </dialog>
 };
 
+const inputCls = "input self-center w-4/5 bg-base-200/50 backdrop-blur-3xl";
 
 type InputLinkProps = {
     ref: RefObject<HTMLInputElement | null>;
@@ -128,7 +129,7 @@ type InputLinkProps = {
 function InputLink({ ref, value, setValue }: InputLinkProps): ReactElement {
     return (
         <div className="self-center w-4/5">
-            <label className="input validator bg-base-200 flex items-center gap-2">
+            <label className="input validator w-full bg-base-200/50 backdrop-blur-3xl flex items-center gap-2">
                 <svg
                     className="h-[1.2em] w-[1.2em] opacity-60"
                     xmlns="http://www.w3.org/2000/svg"
@@ -155,7 +156,7 @@ function InputLink({ ref, value, setValue }: InputLinkProps): ReactElement {
                     onChange={(e) => setValue(e.target.value)}
                     pattern="^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9-].*[a-zA-Z0-9])?.)+[a-zA-Z].*$"
                     title="Must be valid URL"
-                    className="bg-base-200 grow"
+                    className="grow"
                 />
             </label>
 

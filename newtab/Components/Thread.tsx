@@ -130,22 +130,22 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
 
                     {/* Context Menu */}
                     {isMenuOpen && (
-                        <div className="absolute right-0 top-full mt-1 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                        <div className="absolute right-0 top-full mt-1 w-48 backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
                             <button
                                 onClick={() => {
                                     setEditing(true);
                                     setIsMenuOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2 transition-colors" >
+                                className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 hover:text-gray-300 flex items-center gap-2 transition-colors" >
                                 <Pencil size={14} /> Edit Title
                             </button>
-                            <div className="h-px bg-gray-700 my-0.5" />
+                            <div className="h-px bg-white/30 my-0.5" />
                             <button
                                 onClick={() => {
                                     onDeleteThread(data.uuid);
                                     setIsMenuOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 flex items-center gap-2 transition-colors">
+                                className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-200/15 flex items-center gap-2 transition-colors">
                                 <Trash2 size={14} /> Delete Thread
                             </button>
                         </div>

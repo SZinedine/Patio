@@ -45,10 +45,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         onClose();
     };
 
+    const onKeyDown = (e: any) => {
+        if (e.key === "Escape") {
+            onCancelClicked();
+        }
+    }
 
     return (
-        <dialog ref={ref} className="modal modal-bottom sm:modal-middle">
-            <div className="modal-box">
+        <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onKeyDown={onKeyDown}>
+            <div className="modal-box bg-base-100/40 backdrop-blur-2xl">
                 <h2 className="font-bold text-3xl text-center">Settings</h2>
 
                 <BackgroundImage ref={bgImageRef} />
@@ -65,9 +70,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
 
 const BackgroundImage = forwardRef<HTMLInputElement>((_props, ref) => {
     return (
-        <fieldset className="fieldset center mt-7">
+        <fieldset className="fieldset center mt-3">
             <legend className="fieldset-legend text-xl">Wallpaper</legend>
-            <input ref={ref} type="file" accept="image/*" className="file-input place-self-center" />
+            <input ref={ref} type="file" accept="image/*" className="file-input place-self-center bg-base-200/60" />
         </fieldset>
     );
 });

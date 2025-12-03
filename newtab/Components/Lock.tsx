@@ -10,8 +10,8 @@ export default function Lock() {
     };
 
     return <button onClick={clicked}
-        className="fixed bottom-4 right-4 p-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80
-                   hover:text-white backdrop-blur-md border border-white/10
+        className="fixed bottom-4 right-4 p-2.5 rounded-lg bg-white/5 hover:bg-white/20
+                   text-white backdrop-blur-md border border-white/20
                    transition-all hover:scale-105 active:scale-95"
         title="Lock/unlock">
         {
