@@ -164,9 +164,12 @@ async function hasSettings() {
     return result.settings !== undefined && result.settings !== null;
 }
 
+const faviconService1 = "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&size=32&url=";
+const faviconService2 = "https://www.google.com/s2/favicons?sz=64&domain_url=";
+
 /**
  * Fetch favicon and return as data URL
- * @param {string} url
+ * @param {string} url_
  * @returns {Promise<string>}
  */
 async function fetchFavicon(url) {
@@ -174,9 +177,14 @@ async function fetchFavicon(url) {
         throw new Error('No favicon url provided');
     }
 
-    const response = await fetch(url, { cache: 'force-cache' });
+    const url_ = new URL(url).origin;
+
+    let response = await fetch(faviconService1 + url_, { cache: 'force-cache' });
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        response = await fetch(faviconService2 + url_, { cache: 'force-cache' });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
     }
 
     const buffer = await response.arrayBuffer();
@@ -184,6 +192,7 @@ async function fetchFavicon(url) {
     const base64 = arrayBufferToBase64(buffer);
     return `data:${contentType};base64,${base64}`;
 }
+
 
 /**
  * Convert an ArrayBuffer to base64 string

@@ -108,9 +108,9 @@ export async function storeIcon(iconCacheKey: string, blob: Blob) {
 };
 
 
-export async function fetchIconFromBackground(faviconUrl: string): Promise<string | null> {
+export async function fetchIconFromBackground(url: string): Promise<string | null> {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'fetch favicon', url: faviconUrl }, (response) => {
+        chrome.runtime.sendMessage({ action: 'fetch favicon', url: url }, (response) => {
             const err = chrome.runtime.lastError;
             if (err) {
                 reject(new Error(err.message));

@@ -26,11 +26,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
     const lock = useLock();
     const hasChildren = data.children && data.children.length > 0;
     const showMenu = hasChildren && (isHoveringCell || isHoveringMenu);
-    const faviconUrl = useMemo(() =>
-        `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent(data.link)}&size=32`,
-        [data.link]
-    );
-    const iconCacheKey = useMemo(() => data.uuid, [data.uuid]);
+    const iconCacheKey = useMemo(() => new URL(data.link).hostname, [data.link]);
 
     useEffect(() => {
         let revokedUrl: string | null = null;
@@ -49,7 +45,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                     return;
                 }
 
-                const dataUrl = await fetchIconFromBackground(faviconUrl);
+                const dataUrl = await fetchIconFromBackground(data.link);
                 if (cancelled || !dataUrl) {
                     return;
                 }
@@ -73,12 +69,15 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                 URL.revokeObjectURL(revokedUrl);
             }
         };
-    }, [faviconUrl, iconCacheKey]);
+    }, [iconCacheKey]);
 
     const handleDeleteCell = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        dispatch({ type: 'DELETE_CELL', payload: data.uuid });
+
+        if (window.confirm("Are you sure you want to delete this cell?")) {
+            dispatch({ type: 'DELETE_CELL', payload: data.uuid });
+        }
     };
 
     const handleEditCell = (e: React.MouseEvent) => {
@@ -91,7 +90,6 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
         e.preventDefault();
         e.stopPropagation();
         onAddSubCell(data.uuid);
-        // TODO
     };
 
     const updateMenuPosition = () => {

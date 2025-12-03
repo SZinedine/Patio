@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, FC } from 'react';
 import { CellType, ThreadType } from '../Utils/Types';
 import { Cell } from './Cell';
-import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLock } from '../Context/LockContext';
 import { useDataContext } from '../Context/DataContext';
 import Sortable from 'sortablejs';
@@ -137,7 +137,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                     setIsMenuOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2 transition-colors" >
-                                <Plus size={14} /> Edit Title
+                                <Pencil size={14} /> Edit Title
                             </button>
                             <div className="h-px bg-gray-700 my-0.5" />
                             <button
