@@ -133,11 +133,11 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                         <div className="absolute right-0 top-full mt-1 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
                             <button
                                 onClick={() => {
-                                    onAddCell(data.uuid);
+                                    setEditing(true);
                                     setIsMenuOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2 transition-colors" >
-                                <Plus size={14} /> Add New Cell
+                                <Plus size={14} /> Edit Title
                             </button>
                             <div className="h-px bg-gray-700 my-0.5" />
                             <button
