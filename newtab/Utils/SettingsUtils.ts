@@ -1,4 +1,3 @@
-import { SettingsType } from "./Types";
 
 let currentBackgroundUrl: string | null = null;
 
@@ -18,7 +17,7 @@ function openPatioDB(): Promise<IDBDatabase> {
 }
 
 
-export async function storeImage(file: File): Promise<void> {
+export async function storeImage(file: File | Blob): Promise<void> {
     const db = await openPatioDB();
 
     return new Promise((resolve, reject) => {
@@ -40,7 +39,25 @@ export async function storeImage(file: File): Promise<void> {
 
 
 export async function loadAndApplyBackground(): Promise<void> {
+    try {
+        let blob = await getStoredBackground();
+
+        if (!blob) {
+            blob = await fetchDefaultBackgroundFromWorker();
+            await storeImage(blob);
+        }
+
+        applyBackground(blob);
+    } catch (error) {
+        console.error("Failed to load background image:", error);
+        applyBackground(null);
+    }
+}
+
+
+async function getStoredBackground(): Promise<Blob | null> {
     const db = await openPatioDB();
+
     return new Promise((resolve, reject) => {
         const tx = db.transaction("images", "readonly");
         const store = tx.objectStore("images");
@@ -48,23 +65,7 @@ export async function loadAndApplyBackground(): Promise<void> {
 
         getReq.onsuccess = () => {
             const blob = getReq.result as Blob | undefined;
-            if (!blob) {
-                if (currentBackgroundUrl) {
-                    URL.revokeObjectURL(currentBackgroundUrl);
-                    currentBackgroundUrl = null;
-                }
-
-                document.documentElement.style.backgroundImage = "";
-                return;
-            }
-
-            const url = URL.createObjectURL(blob);
-            if (currentBackgroundUrl) {
-                URL.revokeObjectURL(currentBackgroundUrl);
-            }
-
-            currentBackgroundUrl = url;
-            document.documentElement.style.backgroundImage = `url(${url})`;
+            resolve(blob ?? null);
         };
 
         getReq.onerror = () => {
@@ -73,7 +74,6 @@ export async function loadAndApplyBackground(): Promise<void> {
 
         tx.oncomplete = () => {
             db.close();
-            resolve();
         };
 
         tx.onabort = tx.onerror = () => {
@@ -85,27 +85,49 @@ export async function loadAndApplyBackground(): Promise<void> {
 }
 
 
-/**
- * store the state of a list (expanded/collapsed)
- */
-export function storeExpandedListState(isOpen: boolean, uuid: string) {
-    if (!uuid) {
-        return;
-    }
-    try {
-        const raw = localStorage.getItem("expanded_lists");
-        const arr: string[] = raw ? JSON.parse(raw) : [];
-
-        if (!Array.isArray(arr))
-            return;
-
-        let newArray = arr;
-        if (isOpen) {
-            if (!arr.includes(uuid)) newArray = [...arr, uuid];
-        } else {
-            newArray = arr.filter(x => x !== uuid);
+function applyBackground(blob: Blob | null) {
+    if (!blob) {
+        if (currentBackgroundUrl) {
+            URL.revokeObjectURL(currentBackgroundUrl);
+            currentBackgroundUrl = null;
         }
 
-        localStorage.setItem("expanded_lists", JSON.stringify(newArray));
-    } catch (_) { }
+        document.documentElement.style.backgroundImage = "";
+        return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    if (currentBackgroundUrl) {
+        URL.revokeObjectURL(currentBackgroundUrl);
+    }
+
+    currentBackgroundUrl = url;
+    document.documentElement.style.backgroundImage = `url(${url})`;
+}
+
+
+async function fetchDefaultBackgroundFromWorker(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: "get image" }, (response) => {
+            const err = chrome.runtime.lastError;
+            if (err) {
+                reject(new Error(err.message));
+                return;
+            }
+
+            if (!response || response.error) {
+                reject(new Error(response?.error || "Failed to fetch default background"));
+                return;
+            }
+
+            const uint8 = new Uint8Array(response.bytes);
+            const blob = new Blob([uint8], { type: response.type });
+
+            if (!blob) {
+                reject(new Error("Default background blob missing from service worker response"));
+                return;
+            }
+            resolve(blob);
+        });
+    });
 }

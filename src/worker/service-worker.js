@@ -3,6 +3,7 @@ importScripts('data.js')
 const defaultSettings = {
     locked: false,
 }
+const DEFAULT_BACKGROUND_PATH = "images/leaves.jpg";
 
 chrome.runtime.onInstalled.addListener(async () => {
     // storeData(testingData);      // for testing
@@ -79,6 +80,18 @@ function receiveMessage(request, _, sendResponse) {
                 .then((dataUrl) => sendResponse({ dataUrl }))
                 .catch(err => {
                     sendResponse({ error: err?.message || 'Unknown error' });
+                });
+            return true;
+
+        case "get image":
+            getDefaultBackgroundBlob()
+                .then((blob) => blob.arrayBuffer())
+                .then((buffer) => {
+                    const bytes = Array.from(new Uint8Array(buffer));
+                    sendResponse({ bytes, type: "image/jpeg" })})
+                .catch(err => {
+                    console.error('Error while loading default background:', err);
+                    sendResponse({ error: err?.message || 'Failed to load default background' });
                 });
             return true;
 
@@ -191,6 +204,17 @@ async function fetchFavicon(url) {
     const contentType = response.headers.get('content-type') || 'image/png';
     const base64 = arrayBufferToBase64(buffer);
     return `data:${contentType};base64,${base64}`;
+}
+
+
+async function getDefaultBackgroundBlob() {
+    const url = chrome.runtime.getURL(DEFAULT_BACKGROUND_PATH);
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    return await response.blob();
 }
 
 
