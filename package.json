@@ -1,9 +1,10 @@
 {
-    "name": "patio",
-    "version": "1.0.0",
-    "description": "",
+    "name": "Patio",
+    "version": "0.1.0",
+    "description": "A clean Speed Dial extension",
     "scripts": {
         "build": "vite build",
+        "release": "vite build --sourcemap false",
         "dev": "vite"
     },
     "keywords": [],

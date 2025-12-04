@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Patio",
-    "description": "Customize new tab page by adding links to websites",
+    "description": "A clean Speed Dial extension",
     "version": "0.1.0",
     "icons": {
         "16": "logo/logo_16.png",

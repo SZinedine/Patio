@@ -1,87 +1,150 @@
 const DEFAULT_DATA = [
     {
-        uuid: 'a4ed5f49-b269-4afb-bbcd-8d9de2331f01',
-        title: 'AI',
-        children: [
+        "title": "Search",
+        "uuid": "z2n3o3e8-f3g9-8901-h2i3-j4k5l1m7l1x7",
+        "children": [
             {
-                "title": "ChatGPT",
-                "link": "https://chatgpt.com",
-                "description": "An AI-powered conversational assistant developed by OpenAI for answering questions and generating text.",
-                "uuid": "m3n4o5p6-q7r8-9012-s3t4-u5v6w7x8y9z0"
+                "description": "Google",
+                "link": "https://www.google.com/",
+                "title": "Google",
+                "type": "cell",
+                "uuid": "577930e5-ed8c-40ed-a203-f8ecdfe8d632",
+                "children": [
+                    {
+                        "children": [],
+                        "description": "Google Translate",
+                        "link": "https://translate.google.com/",
+                        "title": "Google Translate",
+                        "type": "cell",
+                        "uuid": "d60114b8-9bc8-4214-ad9f-1f650ee65052"
+                    },
+                    {
+                        "children": [],
+                        "description": "Gmail",
+                        "link": "https://mail.google.com/",
+                        "title": "Gmail",
+                        "type": "cell",
+                        "uuid": "3db1b850-bfc5-4f88-b51c-e55d8bc4b579"
+                    },
+                    {
+                        "children": [],
+                        "description": "Google Drive",
+                        "link": "https://drive.google.com/",
+                        "title": "Google Drive",
+                        "type": "cell",
+                        "uuid": "c63459db-9045-4d35-9786-bd12b559f28b"
+                    },
+                    {
+                        "children": [],
+                        "description": "Google Maps",
+                        "link": "https://maps.google.com",
+                        "title": "Google Maps",
+                        "type": "cell",
+                        "uuid": "8445a45d-becb-48e2-8bbf-2bcd9dd1c649"
+                    }
+                ],
             },
             {
-                "title": "Gemini",
-                "link": "https://gemini.google.com/app",
-                "description": "Google's advanced AI assistant capable of understanding and generating natural language responses.",
-                "uuid": "n4o5p6q7-r8s9-0123-t4u5-v6w7x8y9z0a1"
-            },
-            {
-                "title": "Google AI Studio",
-                "link": "https://aistudio.google.com",
-                "description": "A tool from Google for experimenting with and building applications using generative AI models.",
-                "uuid": "o5p6q7r8-s9t0-1234-u5v6-w7x8y9z0a1b2"
-            },
-            {
-                "title": "DeepSeek (chinese AI)",
-                "link": "https://chat.deepseek.com",
-                "description": "A Chinese AI company developing large language models for various applications in Chinese and English.",
-                "uuid": "p6q7r8s9-t0u1-2345-v6w7-x8y9z0a1b2c3"
-            },
-            {
-                "title": "Claude",
-                "link": "https://claude.ai",
-                "description": "An AI assistant developed by Anthropic, designed to be helpful, harmless, and honest in conversations.",
-                "uuid": "q7r8s9t0-u1v2-3456-w7x8-y9z0a1b2c3d4"
-            },
-            {
-                "title": "Microsoft Copilot",
-                "link": "https://copilot.microsoft.com",
-                "description": "Microsoft's AI companion powered by GPT models, integrated into Windows and Microsoft 365 apps.",
-                "uuid": "r8s9t0u1-v2w3-4567-x8y9-z0a1b2c3d4e5"
-            },
-        ]
-
-    },
-    {
-        uuid: 'z2n3o3e8-f3g9-8901-h2i3-j4k5l1m7l1x7',
-        title: 'Favorite',
-        children: [
-            {
-                "title": "DuckDuckGo",
-                "link": "https://duckduckgo.com",
+                "children": [],
                 "description": "DuckDuckGo",
+                "link": "https://duckduckgo.com",
+                "title": "DuckDuckGo",
                 "uuid": "b2c3d4e5-f6g7-8901-h2i3-j4k5l6m7n8o9"
             },
             {
-                "title": "X/Twitter",
-                "link": "https://x.com",
-                "description": "X/Twitter",
-                "uuid": "c3d4e5f6-g7h8-9012-i3j4-k5l6m7n8o9p0"
+                "children": [],
+                "description": "Google News",
+                "link": "https://news.google.com",
+                "title": "Google News",
+                "type": "cell",
+                "uuid": "7cef50ca-485e-4228-a4b7-985e3ad16b46"
             },
             {
-                "title": "Facebook",
-                "link": "https://www.facebook.com",
-                "description": "Facebook",
-                "uuid": "d4e5f6g7-h8i9-0123-j4k5-l6m7n8o9p0q1"
-            },
+                "children": [],
+                "description": "Yahoo News",
+                "link": "https://news.yahoo.com/",
+                "title": "Yahoo News",
+                "type": "cell",
+                "uuid": "3efce326-060e-4b44-9619-0191086eed6f"
+            }
+        ],
+    },
+    {
+        "title": "Social",
+        "type": "thread",
+        "uuid": "eb5b24fa-80b0-4ca8-b815-e1088e111d3f",
+        "children": [
             {
-                "title": "YouTube",
+                "children": [],
+                "description": "Youtube",
                 "link": "https://www.youtube.com",
-                "description": "The leading video-sharing platform where users can watch, upload, and stream videos.",
-                "uuid": "e5f6g7h8-i9j0-1234-k5l6-m7n8o9p0q1r2"
+                "title": "Youtube",
+                "type": "cell",
+                "uuid": "d9f53481-df0e-41b6-afd9-f5ab42c93e4e"
             },
             {
-                "title": "GitHub",
-                "link": "https://github.com",
-                "description": "A platform for developers to host, review, and manage code repositories using Git version control.",
-                "uuid": "f6g7h8i9-j0k1-2345-l6m7-n8o9p0q1r2s3"
+                "children": [],
+                "description": "X",
+                "link": "https://x.com/home",
+                "title": "X",
+                "type": "cell",
+                "uuid": "77531830-543d-4939-bf9f-7268891b43b8"
             },
             {
+                "children": [],
+                "description": "Reddit",
+                "link": "https://www.reddit.com/",
+                "title": "Reddit",
+                "type": "cell",
+                "uuid": "74f4b5fa-508e-4f3b-8236-4653461ef374"
+            },
+            {
+                "children": [],
+                "description": "Facebook",
+                "link": "https://www.facebook.com",
+                "title": "Facebook",
+                "type": "cell",
+                "uuid": "73d778de-c892-45d4-b363-57b7268e277a"
+            },
+            {
+                "children": [],
+                "description": "Instagram",
+                "link": "https://www.instagram.com/",
                 "title": "Instagram",
-                "link": "https://www.instagram.com",
-                "description": "A photo and video sharing app focused on visual storytelling and social interaction.",
-                "uuid": "g7h8i9j0-k1l2-3456-m7n8-o9p0q1r2s3t4"
+                "type": "cell",
+                "uuid": "685d6949-6bf7-4b1b-8d52-2cdf4d1e59ee"
+            }
+        ],
+    },
+    {
+        "title": "Dev",
+        "type": "thread",
+        "uuid": "0f4bdf40-bc6d-4813-ae3d-d78cc525ad1f",
+        "children": [
+            {
+                "children": [],
+                "description": "Github",
+                "link": "https://github.com",
+                "title": "Github",
+                "type": "cell",
+                "uuid": "6772a966-2da1-4195-99aa-edcc915e7cb5"
             },
+            {
+                "children": [],
+                "description": "Stack Overflow",
+                "link": "https://stackoverflow.com",
+                "title": "Stack Overflow",
+                "type": "cell",
+                "uuid": "d53ff796-1638-49a5-86b2-809b2188b8aa"
+            },
+            {
+                "children": [],
+                "description": "Social Media for developers",
+                "link": "https://dev.to",
+                "title": "DEV Community",
+                "type": "cell",
+                "uuid": "efcbe863-b51b-406f-98de-42baef89676d"
+            }
         ]
     }
 ];
