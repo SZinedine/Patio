@@ -1,11 +1,12 @@
-import { CellType, HistoryType, SettingsType, ThreadType } from "./Types";
+import { SettingsType, ThreadType } from "./Types";
 
+const Browser = typeof browser !== "undefined" ? browser : chrome;
 type defaultValueType = [] | {};
 
 async function fetchFromStorage(actionValue: string, key: string, defaultValue: defaultValueType = []): Promise<any> {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: actionValue }, (response) => {
-            const err = chrome.runtime.lastError;
+        Browser.runtime.sendMessage({ action: actionValue }, (response) => {
+            const err = Browser.runtime.lastError;
             if (err) {
                 reject(new Error(err.message));
                 return;
@@ -25,8 +26,8 @@ async function fetchFromStorage(actionValue: string, key: string, defaultValue: 
 
 async function sendRuntimeMessage(request: object): Promise<{ data: any }> {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(request, (response) => {
-            const err = chrome.runtime.lastError;
+        Browser.runtime.sendMessage(request, (response) => {
+            const err = Browser.runtime.lastError;
             if (err) {
                 console.log(err);
                 reject(new Error(err.message));
@@ -110,8 +111,8 @@ export async function storeIcon(iconCacheKey: string, blob: Blob) {
 
 export async function fetchIconFromBackground(url: string): Promise<string | null> {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'fetch favicon', url: url }, (response) => {
-            const err = chrome.runtime.lastError;
+        Browser.runtime.sendMessage({ action: 'fetch favicon', url: url }, (response) => {
+            const err = Browser.runtime.lastError;
             if (err) {
                 reject(new Error(err.message));
                 return;

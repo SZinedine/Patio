@@ -11,6 +11,9 @@ import { reducer } from './Utils/Reducer';
 import { DataContext } from './Context/DataContext';
 import Sortable from 'sortablejs';
 
+
+const Browser = typeof browser !== "undefined" ? browser : chrome;
+
 export default function App() {
     // Application State
     const [data, dispatch] = useReducer(reducer, []);
@@ -67,8 +70,8 @@ export default function App() {
             }
         }
 
-        chrome.storage.onChanged.addListener(handleChange);
-        return () => chrome.storage.onChanged.removeListener(handleChange);
+        Browser.storage.onChanged.addListener(handleChange);
+        return () => Browser.storage.onChanged.removeListener(handleChange);
     }, []);
 
     useEffect(() => {

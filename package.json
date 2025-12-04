@@ -3,9 +3,12 @@
     "version": "0.1.0",
     "description": "A clean Speed Dial extension",
     "scripts": {
-        "build": "vite build",
-        "release": "vite build --sourcemap false",
-        "dev": "vite"
+        "build": "npm run build:chrome",
+        "release": "npm run release:chrome",
+        "build:chrome": "vite build && cp ./manifest-chrome.json ./dist/manifest.json",
+        "build:firefox": "vite build && cp ./manifest-firefox.json ./dist/manifest.json",
+        "release:chrome": "vite build --sourcemap false && cp ./manifest-chrome.json ./dist/manifest.json",
+        "release:firefox": "vite build --sourcemap false && cp ./manifest-firefox.json ./dist/manifest.json"
     },
     "keywords": [],
     "author": "",

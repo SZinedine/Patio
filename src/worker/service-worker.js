@@ -1,11 +1,16 @@
-importScripts('data.js')
+
+if (typeof importScripts === "function") {
+    importScripts('data.js');
+}
+
+const Browser = typeof browser !== "undefined" ? browser : chrome;
 
 const defaultSettings = {
     locked: false,
 }
 const DEFAULT_BACKGROUND_PATH = "images/leaves.jpg";
 
-chrome.runtime.onInstalled.addListener(async () => {
+Browser.runtime.onInstalled.addListener(async () => {
     // storeData(testingData);      // for testing
 
     const data = await hasData();
@@ -21,7 +26,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 
-chrome.runtime.onMessage.addListener(receiveMessage);
+Browser.runtime.onMessage.addListener(receiveMessage);
 
 /**
  * @param {any} request
@@ -88,7 +93,8 @@ function receiveMessage(request, _, sendResponse) {
                 .then((blob) => blob.arrayBuffer())
                 .then((buffer) => {
                     const bytes = Array.from(new Uint8Array(buffer));
-                    sendResponse({ bytes, type: "image/jpeg" })})
+                    sendResponse({ bytes, type: "image/jpeg" })
+                })
                 .catch(err => {
                     console.error('Error while loading default background:', err);
                     sendResponse({ error: err?.message || 'Failed to load default background' });
@@ -106,7 +112,7 @@ function receiveMessage(request, _, sendResponse) {
 
 
 /**
- * Stores data in chrome storage
+ * Stores data in Browser storage
  * @param {Array<Object>} data - The data to store
  * @returns {Promise<void>}
  */
@@ -116,7 +122,7 @@ async function storeData(data) {
     }
 
     try {
-        await chrome.storage.local.set({ data });
+        await Browser.storage.local.set({ data });
     } catch (error) {
         console.error("Error storing data:", error);
         throw error;
@@ -129,7 +135,7 @@ async function storeData(data) {
  * @returns {Promise<Array<Object>>} The stored data or an empty array if none exists
  */
 async function getData() {
-    const result = await chrome.storage.local.get(["data"]);
+    const result = await Browser.storage.local.get(["data"]);
     return result.data || [];
 }
 
@@ -139,7 +145,7 @@ async function getData() {
  * @returns {Promise<boolean>} True if data exists, false otherwise
  */
 async function hasData() {
-    const result = await chrome.storage.local.get(['data']);
+    const result = await Browser.storage.local.get(['data']);
     return result.data !== undefined && result.data !== null;
 }
 
@@ -154,7 +160,7 @@ async function storeSettings(req) {
         throw new Error("storeSettings: invalid setting object");
     }
 
-    await chrome.storage.local.set({ settings });
+    await Browser.storage.local.set({ settings });
 }
 
 
@@ -163,7 +169,7 @@ async function storeSettings(req) {
  * @returns {Promise<Array<Object>>} The stored data or an empty array if none exists
  */
 async function getSettings() {
-    const result = await chrome.storage.local.get(["settings"]);
+    const result = await Browser.storage.local.get(["settings"]);
     return result.settings || defaultSettings;
 }
 
@@ -173,7 +179,7 @@ async function getSettings() {
  * @returns {Promise<boolean>} True if settings exists, false otherwise
  */
 async function hasSettings() {
-    const result = await chrome.storage.local.get(['settings']);
+    const result = await Browser.storage.local.get(['settings']);
     return result.settings !== undefined && result.settings !== null;
 }
 
@@ -208,7 +214,7 @@ async function fetchFavicon(url) {
 
 
 async function getDefaultBackgroundBlob() {
-    const url = chrome.runtime.getURL(DEFAULT_BACKGROUND_PATH);
+    const url = Browser.runtime.getURL(DEFAULT_BACKGROUND_PATH);
     const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);

@@ -1,4 +1,5 @@
 
+const Browser = typeof browser !== "undefined" ? browser : chrome;
 let currentBackgroundUrl: string | null = null;
 
 function openPatioDB(): Promise<IDBDatabase> {
@@ -108,8 +109,8 @@ function applyBackground(blob: Blob | null) {
 
 async function fetchDefaultBackgroundFromWorker(): Promise<Blob> {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: "get image" }, (response) => {
-            const err = chrome.runtime.lastError;
+        Browser.runtime.sendMessage({ action: "get image" }, (response) => {
+            const err = Browser.runtime.lastError;
             if (err) {
                 reject(new Error(err.message));
                 return;
