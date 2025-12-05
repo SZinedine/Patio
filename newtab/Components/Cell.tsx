@@ -5,6 +5,7 @@ import { Pencil, Plus, X } from 'lucide-react';
 import { dataUrlToBlob, fetchIconFromBackground, getCachedIcon, storeIcon } from '../Utils/Data';
 import { useLock } from '../Context/LockContext';
 import { useDataContext } from '../Context/DataContext';
+import Sortable from 'sortablejs';
 
 interface CellProps {
     data: CellType;
@@ -27,6 +28,9 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
     const hasChildren = data.children && data.children.length > 0;
     const showMenu = hasChildren && (isHoveringCell || isHoveringMenu);
     const iconCacheKey = useMemo(() => new URL(data.link).hostname, [data.link]);
+
+    const listRef = useRef(null);
+    const sortable = useRef<Sortable | null>(null);
 
     useEffect(() => {
         let revokedUrl: string | null = null;
@@ -70,6 +74,40 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
             }
         };
     }, [iconCacheKey]);
+
+    // Sortable
+    useEffect(() => {
+        if (!listRef.current || !showMenu) {
+            return;
+        }
+
+        const sortableFunctions = {
+            onEnd: ({ oldIndex, newIndex }: any) => {
+                if (oldIndex == null || newIndex == null) {
+                    return;
+                }
+
+                const updated = [...data.children];
+                const [moved] = updated.splice(oldIndex, 1);
+                updated.splice(newIndex, 0, moved);
+                data.children = updated;
+                dispatch({ type: 'EDIT_CELL', payload: { ...data } });
+            },
+        }
+
+        sortable.current = Sortable.create(listRef.current, {
+            animation: 150,
+            ghostClass: "ghost",     // class applied while dragging
+            chosenClass: "chosen",   // class when selected
+            dragClass: "drag",       // class while dragging item
+            filter: ".no-drag",      // class for non dragging elements
+            disabled: lock.locked,
+            onEnd: sortableFunctions.onEnd,
+        });
+
+        return () => sortable.current?.destroy();
+    }, [sortable, lock.locked, showMenu]);
+
 
     const handleDeleteCell = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -207,7 +245,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                             <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400">
                                 {data.title}
                             </div>
-                            <div className="divide-y divide-white/5">
+                            <div ref={listRef} className="divide-y divide-white/5">
                                 {data.children.map((cell: CellType) => (
                                     <Cell
                                         key={cell.uuid}

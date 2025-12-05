@@ -68,7 +68,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
         });
 
         return () => sortable.current?.destroy();
-    }, [sortable.current, lock.locked, data.children]);
+    }, [sortable, lock.locked, data.children]);
 
 
     useEffect(() => {
