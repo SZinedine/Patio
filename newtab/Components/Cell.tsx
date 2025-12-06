@@ -21,16 +21,23 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
     const [iconSrc, setIconSrc] = useState<string | null>(null);
     const [isHoveringCell, setIsHoveringCell] = useState(false);
     const [isHoveringMenu, setIsHoveringMenu] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const cellRef = useRef<HTMLAnchorElement>(null);
     const { dispatch } = useDataContext();
     const lock = useLock();
     const hasChildren = data.children && data.children.length > 0;
-    const showMenu = hasChildren && (isHoveringCell || isHoveringMenu);
+    // Hide the sub-cell menu while the parent cell itself is being dragged so it does not intercept drag events.
+    const showMenu = hasChildren && !isDragging && (isHoveringCell || isHoveringMenu);
+    const dataRef = useRef(data);
     const iconCacheKey = useMemo(() => new URL(data.link).hostname, [data.link]);
 
     const listRef = useRef(null);
     const sortable = useRef<Sortable | null>(null);
+
+    useEffect(() => {
+        dataRef.current = data;
+    }, [data]);
 
     useEffect(() => {
         let revokedUrl: string | null = null;
@@ -77,7 +84,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
 
     // Sortable
     useEffect(() => {
-        if (!listRef.current || !showMenu) {
+        if (!hasChildren || !listRef.current) {
             return;
         }
 
@@ -87,11 +94,15 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                     return;
                 }
 
-                const updated = [...data.children];
+                const current = dataRef.current;
+                if (!current?.children) {
+                    return;
+                }
+
+                const updated = [...current.children];
                 const [moved] = updated.splice(oldIndex, 1);
                 updated.splice(newIndex, 0, moved);
-                data.children = updated;
-                dispatch({ type: 'EDIT_CELL', payload: { ...data } });
+                dispatch({ type: 'EDIT_CELL', payload: { ...current, children: updated } });
             },
         }
 
@@ -106,7 +117,13 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
         });
 
         return () => sortable.current?.destroy();
-    }, [sortable, lock.locked, showMenu]);
+    }, [hasChildren]);
+
+    useEffect(() => {
+        if (sortable.current) {
+            sortable.current.option("disabled", lock.locked);
+        }
+    }, [lock.locked]);
 
 
     const handleDeleteCell = (e: React.MouseEvent) => {
@@ -160,6 +177,8 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                 ref={cellRef}
                 href={data.link}
                 rel="noopener noreferrer"
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={() => setIsDragging(false)}
                 onMouseEnter={() => {
                     setIsHoveringCell(true);
                     updateMenuPosition();
@@ -234,9 +253,9 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
 
             {/* Sub Cells Menu */}
             {
-                showMenu && createPortal(
+                hasChildren && createPortal(
                     <div
-                        className="fixed"
+                        className={`fixed transition duration-100 ${showMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                         style={{ top: menuPosition.top, left: menuPosition.left, zIndex: 9999 }}
                         onMouseEnter={() => setIsHoveringMenu(true)}
                         onMouseLeave={() => setIsHoveringMenu(false)}
