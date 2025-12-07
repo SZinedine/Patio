@@ -41,10 +41,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             onSave({ ...settings });
         }
 
-        onClose();
+        onRestoreSelected()
+        onCancelClicked();
     };
 
     const onCancelClicked = () => {
+        if (restoreFileRef.current) {
+            restoreFileRef.current.value = "";
+        }
+
+        if (bgImageRef.current) {
+            bgImageRef.current.value = "";
+        }
+
         onClose();
     };
 
@@ -57,8 +66,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         }
     };
 
-    const onRestoreSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const onRestoreSelected = async () => {
+        const file = restoreFileRef.current?.files?.[0];
         if (!file) {
             return;
         }
@@ -69,7 +78,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             console.error(error);
             alert("Failed to restore from the selected backup.");
         } finally {
-            e.target.value = "";
+            if (restoreFileRef.current) {
+                restoreFileRef.current.value = "";
+            }
         }
     };
 
@@ -87,7 +98,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                 <BackgroundImage ref={bgImageRef} />
                 <BackupRestoreControls
                     onBackupClicked={onBackupClicked}
-                    onRestoreSelected={onRestoreSelected}
                     restoreFileRef={restoreFileRef}
                 />
 
@@ -113,27 +123,30 @@ const BackgroundImage = forwardRef<HTMLInputElement>((_props, ref) => {
 
 type BackupRestoreProps = {
     onBackupClicked: () => void;
-    onRestoreSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    restoreFileRef: React.RefObject<HTMLInputElement>;
+    restoreFileRef: React.RefObject<HTMLInputElement | null>;
 };
 
-const BackupRestoreControls: React.FC<BackupRestoreProps> = ({ onBackupClicked, onRestoreSelected, restoreFileRef }) => {
+
+const BackupRestoreControls: React.FC<BackupRestoreProps> = ({ onBackupClicked, restoreFileRef }) => {
     return (
-        <fieldset className="fieldset mt-4">
+        <fieldset className="fieldset mt-3">
             <legend className="fieldset-legend text-xl">Backup & Restore</legend>
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <button className="btn btn-outline" type="button" onClick={onBackupClicked}>
-                    Backup
-                </button>
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-1 sm:items-center sm:justify-between">
+                <div className="items-center gap-3">
+                    <p className="text-xs opacity-70">Download a backup file.</p>
+                    <button className="btn" type="button" onClick={onBackupClicked}>
+                        Backup
+                    </button>
+                </div>
+                <div className="divider lg:divider-horizontal"></div>
+                <div className="items-center gap-3">
+                    <p className="text-xs opacity-70">Select a backup file to restore.</p>
                     <input
                         ref={restoreFileRef}
                         type="file"
-                        accept="application/json"
+                        accept=".patio"
                         className="file-input bg-base-200/60"
-                        onChange={onRestoreSelected}
                     />
-                    <p className="text-xs opacity-70">Select a backup file to restore.</p>
                 </div>
             </div>
         </fieldset>
