@@ -118,14 +118,11 @@ export default function App() {
             filter: ".no-drag",
             disabled: locked,
             onEnd: ({ oldIndex, newIndex }) => {
-                if (oldIndex == null || newIndex == null) {
+                if (oldIndex == null || newIndex == null || oldIndex === newIndex) {
                     return;
                 }
 
-                const updated = [...data];
-                const [moved] = updated.splice(oldIndex, 1);
-                updated.splice(newIndex, 0, moved);
-                dispatch({ type: 'SET_DATA', payload: updated });
+                dispatch({ type: 'REORDER_THREADS', payload: { oldIndex, newIndex } });
             }
         });
 

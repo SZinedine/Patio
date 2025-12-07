@@ -6,6 +6,7 @@ export type Action =
     | { type: 'ADD_THREAD'; payload: ThreadType }
     | { type: 'EDIT_THREAD'; payload: ThreadType }
     | { type: 'DELETE_THREAD'; payload: string } // payload is thread UUID
+    | { type: 'REORDER_THREADS'; payload: { oldIndex: number; newIndex: number } }
     | { type: 'ADD_CELL'; payload: { threadUuid: string; cell: CellType } }
     | { type: 'EDIT_CELL'; payload: CellType }
     | { type: 'DELETE_CELL'; payload: string } // payload is cell UUID
@@ -36,6 +37,24 @@ export function reducer(state: ThreadType[], action: Action): ThreadType[] {
 
         case 'DELETE_THREAD':
             return persistState(state.filter(thread => thread.uuid !== action.payload));
+
+        case 'REORDER_THREADS': {
+            const { oldIndex, newIndex } = action.payload;
+            if (
+                oldIndex === newIndex ||
+                oldIndex < 0 ||
+                newIndex < 0 ||
+                oldIndex >= state.length ||
+                newIndex >= state.length
+            ) {
+                return state;
+            }
+
+            const reordered = [...state];
+            const [moved] = reordered.splice(oldIndex, 1);
+            reordered.splice(newIndex, 0, moved);
+            return persistState(reordered);
+        }
 
         case 'ADD_CELL': {
             const { threadUuid, cell } = action.payload;
