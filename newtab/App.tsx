@@ -2,7 +2,7 @@ import { useState, useEffect, useReducer, useRef } from 'react';
 import { Thread } from './Components/Thread';
 import { Settings as SettingsIcon, Plus, LayoutGrid, Loader } from 'lucide-react';
 import { CellType, createThread, SettingsType, ThreadType } from './Utils/Types';
-import { fetchData, fetchSettings, saveSettings } from './Utils/Data';
+import { fetchData, fetchSettings, saveData, saveSettings } from './Utils/Data';
 import { CellModal, CellModalModeType } from './Modals/CellModal';
 import { SettingsModal } from './Modals/SettingsModal';
 import Lock from './Components/Lock';
@@ -10,6 +10,8 @@ import { LockContext } from "./Context/LockContext";
 import { reducer } from './Utils/Reducer';
 import { DataContext } from './Context/DataContext';
 import Sortable from 'sortablejs';
+import { applyBackgroundDataUrl, loadAndApplyBackground } from './Utils/SettingsUtils';
+import { backupBundleToBlob, buildBackupBundle, parseBackupFile } from './Utils/Backup';
 
 
 const Browser = typeof browser !== "undefined" ? browser : chrome;
@@ -187,6 +189,46 @@ export default function App() {
         setCellModalMode("");
     };
 
+    const handleBackup = async () => {
+        try {
+            const backup = await buildBackupBundle(data, settings);
+            const blob = await backupBundleToBlob(backup);
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `patio-backup-${new Date().toISOString()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to create backup:", error);
+            alert("Failed to create backup file.");
+        }
+    };
+
+    const handleRestore = async (file: File) => {
+        try {
+            const backup = await parseBackupFile(file);
+
+            await saveData(backup.threads);
+            dispatch({ type: 'SET_DATA', payload: backup.threads });
+
+            setSettings(backup.settings);
+            setLocked(Boolean(backup.settings?.locked));
+            await saveSettings(backup.settings);
+
+            if (backup.background?.dataUrl) {
+                await applyBackgroundDataUrl(backup.background.dataUrl);
+            } else {
+                await loadAndApplyBackground();
+            }
+        } catch (error) {
+            console.error("Failed to restore backup:", error);
+            alert(error instanceof Error ? error.message : "Failed to restore backup.");
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-gray-900 text-white">
@@ -283,6 +325,8 @@ export default function App() {
                     onClose={() => setOpenSettingsModal(false)}
                     settings={settings}
                     onSave={setSettings}
+                    onBackup={handleBackup}
+                    onRestore={handleRestore}
                 />
             </div>
         </DataContext.Provider>

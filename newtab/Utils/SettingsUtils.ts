@@ -1,4 +1,6 @@
 
+import { dataUrlToBlob } from "./Data";
+
 const Browser = typeof browser !== "undefined" ? browser : chrome;
 let currentBackgroundUrl: string | null = null;
 
@@ -53,6 +55,28 @@ export async function loadAndApplyBackground(): Promise<void> {
         console.error("Failed to load background image:", error);
         applyBackground(null);
     }
+}
+
+export async function getBackgroundBlob(): Promise<Blob | null> {
+    try {
+        const blob = await getStoredBackground();
+        if (blob) {
+            return blob;
+        }
+
+        const defaultBlob = await fetchDefaultBackgroundFromWorker();
+        await storeImage(defaultBlob);
+        return defaultBlob;
+    } catch (error) {
+        console.error("Failed to fetch background image:", error);
+        return null;
+    }
+}
+
+export async function applyBackgroundDataUrl(dataUrl: string): Promise<void> {
+    const blob = dataUrlToBlob(dataUrl);
+    await storeImage(blob);
+    await loadAndApplyBackground();
 }
 
 
