@@ -24,6 +24,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
     const [isDragging, setIsDragging] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const cellRef = useRef<HTMLAnchorElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     const { dispatch } = useDataContext();
     const lock = useLock();
     const hasChildren = data.children && data.children.length > 0;
@@ -148,14 +149,37 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
     };
 
     const updateMenuPosition = () => {
-        if (!cellRef.current) {
+        if (!cellRef.current || !menuRef.current) {
             return;
         }
-        const rect = cellRef.current.getBoundingClientRect();
-        setMenuPosition({
-            top: rect.top + window.scrollY,
-            left: rect.right + 1 + window.scrollX
-        });
+
+        const cellRect = cellRef.current.getBoundingClientRect();
+        const menuRect = menuRef.current.getBoundingClientRect();
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const margin = 0;
+
+        // Default: position to the right and aligned to the top of the hovered cell.
+        let left = cellRect.right + margin;
+        let top = cellRect.top;
+
+        // Flip horizontally if there isn't enough space on the right.
+        if (left + menuRect.width > winW) {
+            left = cellRect.left - menuRect.width - margin;
+        }
+
+        const maxLeft = Math.max(margin, winW - menuRect.width - margin);
+        left = Math.min(Math.max(margin, left), maxLeft);
+
+        // Flip vertically if there isn't enough space below.
+        if (top + menuRect.height > winH) {
+            top = cellRect.bottom - menuRect.height - margin;
+        }
+
+        const maxTop = Math.max(margin, winH - menuRect.height - margin);
+        top = Math.min(Math.max(margin, top), maxTop);
+
+        setMenuPosition({ top, left });
     };
 
     useEffect(() => {
@@ -169,6 +193,12 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
             window.removeEventListener('scroll', handleReposition, true);
             window.removeEventListener('resize', handleReposition);
         };
+    }, [showMenu]);
+
+    useEffect(() => {
+        if (showMenu) {
+            updateMenuPosition();
+        }
     }, [showMenu]);
 
     return (
@@ -255,6 +285,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
             {
                 hasChildren && createPortal(
                     <div
+                        ref={menuRef}
                         className={`fixed transition duration-100 ${showMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                         style={{ top: menuPosition.top, left: menuPosition.left, zIndex: 9999 }}
                         onMouseEnter={() => setIsHoveringMenu(true)}
