@@ -206,6 +206,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
             <a
                 ref={cellRef}
                 href={data.link}
+                title={data.description || data.link}
                 rel="noopener noreferrer"
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={() => setIsDragging(false)}
