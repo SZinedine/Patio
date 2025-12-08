@@ -292,7 +292,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                         onMouseEnter={() => setIsHoveringMenu(true)}
                         onMouseLeave={() => setIsHoveringMenu(false)}
                     >
-                        <div className="min-w-[280px] max-h-96 overflow-y-auto rounded-xl bg-gray-700/10 border border-white/10 shadow-2xl backdrop-blur-lg">
+                        <div className="w-[310px] max-h-96 overflow-y-auto rounded-xl bg-gray-700/10 border border-white/10 shadow-2xl backdrop-blur-lg">
                             <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400">
                                 {data.title}
                             </div>

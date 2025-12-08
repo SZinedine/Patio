@@ -112,7 +112,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
         </span>)
     )
 
-    return <div className="flex flex-col w-72 shrink-0 h-full max-h-full">
+    return <div className="flex flex-col w-72 shrink-0 h-fit max-h-full">
         {/* Thread Header */}
         <div className="flex items-center justify-between mb-3 px-1">
             {
@@ -177,20 +177,20 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                         )
                 }
 
-                {/* Quick Add Button at bottom of stack */}
-                {!lock.locked &&
-                    <button
-                        onClick={() => onAddCell(data.uuid)}
-                        className="no-drag w-full py-2 mt-1 border border-dashed border-white/10 rounded-lg
-                                   text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5
-                                   transition-all flex items-center justify-center gap-2 text-sm"
-                    >
-                        <Plus size={14} />
-                        Add Cell
-                    </button>
-                }
             </div>
         </div>
+        {/* Quick Add Button at bottom of stack */}
+        {!lock.locked &&
+            <button
+                onClick={() => onAddCell(data.uuid)}
+                className="no-drag w-full py-2 mt-1 border border-dashed border-white/10 rounded-lg
+                                   text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5
+                                   transition-all flex items-center justify-center gap-2 text-sm"
+            >
+                <Plus size={14} />
+                Add Cell
+            </button>
+        }
     </div>
         ;
 };
