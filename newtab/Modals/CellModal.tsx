@@ -40,13 +40,12 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
         ref.current?.showModal();
     }, [mode]);
 
-    const handleManualSubmit = (e: FormEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        if (!link)
-            return;
+    const handleManualSubmit = (e: FormEvent<HTMLButtonElement> | null) => {
+        if (e) {
+            e.preventDefault();
+        }
 
-        if (!linkRef.current?.checkValidity()) {
-            console.log("Invalid link");
+        if (!link || !linkRef.current?.checkValidity()) {
             return;
         }
 
@@ -70,6 +69,12 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
 
         clear();
     };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+        if (e && e.key === "Enter") {
+            handleManualSubmit(null);
+        }
+    }
 
 
     const close = (e: MouseEvent<HTMLButtonElement> | MouseEvent<HTMLDialogElement> | null) => {
@@ -99,13 +104,13 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
             <fieldset className="fieldset flex flex-col justify-center p-2">
 
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">URL</label>
-                <InputLink ref={linkRef} value={link} setValue={setLink} />
+                <InputLink ref={linkRef} value={link} setValue={setLink} onKeyDown={onKeyDown} />
 
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">TITLE</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder="Title" className={inputCls} />
+                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder="Title" className={inputCls} onKeyDown={onKeyDown} />
 
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">DESCRIPTION</label>
-                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder="Description" className={inputCls} />
+                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder="Description" className={inputCls} onKeyDown={onKeyDown} />
 
             </fieldset>
             <div className="modal-action">
@@ -124,9 +129,10 @@ type InputLinkProps = {
     ref: RefObject<HTMLInputElement | null>;
     value: string;
     setValue: (value: string) => void;
+    onKeyDown: (e: KeyboardEvent) => void;
 };
 
-function InputLink({ ref, value, setValue }: InputLinkProps): ReactElement {
+function InputLink({ ref, value, setValue, onKeyDown }: InputLinkProps): ReactElement {
     return (
         <div className="self-center w-4/5">
             <label className="input validator w-full bg-base-200/50 backdrop-blur-3xl flex items-center gap-2">
@@ -150,6 +156,7 @@ function InputLink({ ref, value, setValue }: InputLinkProps): ReactElement {
                 <input
                     ref={ref}
                     type="url"
+                    onKeyDown={onKeyDown}
                     required
                     placeholder="https://"
                     value={value}
