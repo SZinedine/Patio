@@ -68,7 +68,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                 revokedUrl = objectUrl;
                 setIconSrc(objectUrl);
             } catch (_) {
-                console.warn("no icon for " + data.link);
+                console.debug("no icon for " + data.link);
                 setIconSrc(null);
             }
         };
@@ -292,11 +292,11 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                         onMouseEnter={() => setIsHoveringMenu(true)}
                         onMouseLeave={() => setIsHoveringMenu(false)}
                     >
-                        <div className="w-[310px] max-h-96 overflow-y-auto rounded-xl bg-gray-700/10 border border-white/10 shadow-2xl backdrop-blur-lg">
-                            <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400">
+                        <div className="w-[310px] max-h-96 rounded-xl bg-gray-700/10 border border-white/10 shadow-2xl backdrop-blur-lg flex flex-col overflow-hidden">
+                            <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400 shrink-0">
                                 {data.title}
                             </div>
-                            <div ref={listRef} className="divide-y divide-white/5">
+                            <div ref={listRef} className="divide-y divide-white/5 overflow-y-auto">
                                 {data.children.map((cell: CellType) => (
                                     <Cell
                                         key={cell.uuid}
