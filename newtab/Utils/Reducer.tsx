@@ -8,6 +8,7 @@ export type Action =
     | { type: 'DELETE_THREAD'; payload: string } // payload is thread UUID
     | { type: 'REORDER_THREADS'; payload: { oldIndex: number; newIndex: number } }
     | { type: 'ADD_CELL'; payload: { threadUuid: string; cell: CellType } }
+    | { type: 'MOVE_CELL'; payload: { fromThreadUuid: string; toThreadUuid: string; cellUuid: string; newIndex: number } }
     | { type: 'EDIT_CELL'; payload: CellType }
     | { type: 'DELETE_CELL'; payload: string } // payload is cell UUID
     | { type: 'ADD_SUB_CELL'; payload: { parentCellUuid: string; cell: CellType } };
@@ -63,6 +64,43 @@ export function reducer(state: ThreadType[], action: Action): ThreadType[] {
                     ? { ...thread, children: [...thread.children, cell] }
                     : thread
             ));
+        }
+
+        case 'MOVE_CELL': {
+            const { fromThreadUuid, toThreadUuid, cellUuid, newIndex } = action.payload;
+            if (fromThreadUuid === toThreadUuid) {
+                return state;
+            }
+
+            const fromThread = state.find(thread => thread.uuid === fromThreadUuid);
+            const toThread = state.find(thread => thread.uuid === toThreadUuid);
+            if (!fromThread || !toThread) {
+                return state;
+            }
+
+            const movedCell = fromThread.children.find(cell => cell.uuid === cellUuid);
+            if (!movedCell) {
+                return state;
+            }
+
+            const clampedIndex = Math.min(Math.max(0, newIndex), toThread.children.length);
+
+            const finalState = state.map(thread => {
+                if (thread.uuid === fromThreadUuid) {
+                    return {
+                        ...thread,
+                        children: thread.children.filter(cell => cell.uuid !== cellUuid),
+                    };
+                }
+                if (thread.uuid === toThreadUuid) {
+                    const children = [...thread.children];
+                    children.splice(clampedIndex, 0, movedCell);
+                    return { ...thread, children };
+                }
+                return thread;
+            });
+
+            return persistState(finalState);
         }
 
         case 'EDIT_CELL': {

@@ -4,7 +4,7 @@ import { Cell } from './Cell';
 import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLock } from '../Context/LockContext';
 import { useDataContext } from '../Context/DataContext';
-import Sortable from 'sortablejs';
+import Sortable, { SortableEvent } from 'sortablejs';
 
 interface ThreadProps {
     data: ThreadType;
@@ -23,6 +23,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
     const { dispatch } = useDataContext();
     const lock = useLock();
     const sortable = useRef<Sortable | null>(null);
+    const dataRef = useRef(data);
 
     // Click outside to close menu
     useEffect(() => {
@@ -36,6 +37,9 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
     }, []);
 
     useEffect(() => setTitle(data.title), [data.title]);
+    useEffect(() => {
+        dataRef.current = data;
+    }, [data]);
 
     // Sortable
     useEffect(() => {
@@ -43,32 +47,64 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
             return;
         }
 
-        const sortableFunctions = {
-            onEnd: ({ oldIndex, newIndex }: any) => {
-                if (oldIndex == null || newIndex == null) {
-                    return;
-                }
-
-                const updated = [...data.children];
-                const [moved] = updated.splice(oldIndex, 1);
-                updated.splice(newIndex, 0, moved);
-                data.children = updated;
-                dispatch({ type: 'EDIT_THREAD', payload: { ...data } });
-            },
-        }
-
         sortable.current = Sortable.create(listRef.current, {
             animation: 150,
+            group: "cells",
+            draggable: ".cell-item",
             ghostClass: "ghost",     // class applied while dragging
             chosenClass: "chosen",   // class when selected
             dragClass: "drag",       // class while dragging item
             filter: ".no-drag",      // class for non dragging elements
             disabled: lock.locked,
-            onEnd: sortableFunctions.onEnd,
+            onEnd: ({ oldIndex, newIndex, from, to }: SortableEvent) => {
+                if (from !== to || oldIndex == null || newIndex == null || oldIndex === newIndex) {
+                    return;
+                }
+
+                const current = dataRef.current;
+                const updated = [...current.children];
+                const [moved] = updated.splice(oldIndex, 1);
+                updated.splice(newIndex, 0, moved);
+                dispatch({ type: 'EDIT_THREAD', payload: { ...current, children: updated } });
+            },
+            onAdd: ({ from, item, newIndex, oldIndex }: SortableEvent) => {
+
+                try {   // move the item back to satisfy React
+                    const referenceNode = (typeof oldIndex === "number") ?
+                        from.children[oldIndex] ?? null :
+                        null;
+                    from.insertBefore(item, referenceNode);
+                } catch {
+                    console.warn("Failed to restore DOM after cross-thread move.");
+                }
+
+                if (newIndex == null) {
+                    return;
+                }
+
+                const toThreadUuid = dataRef.current.uuid;
+                const fromThreadUuid = from?.dataset?.threadUuid;
+                const cellUuid = item?.dataset?.cellUuid;
+
+                if (!fromThreadUuid || !cellUuid || fromThreadUuid === toThreadUuid) {
+                    return;
+                }
+
+                dispatch({
+                    type: 'MOVE_CELL',
+                    payload: { fromThreadUuid, toThreadUuid, cellUuid, newIndex },
+                });
+            },
         });
 
         return () => sortable.current?.destroy();
-    }, [sortable, lock.locked, data.children]);
+    }, []);
+
+    useEffect(() => {
+        if (sortable.current) {
+            sortable.current.option("disabled", lock.locked);
+        }
+    }, [lock.locked]);
 
 
     useEffect(() => {
@@ -157,7 +193,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
 
         {/* Link Stack */}
         <div className="flex-1 overflow-y-auto pr-1 pb-4 scrollbar-hide">
-            <div ref={listRef} className="flex flex-col gap-2.5">
+            <div ref={listRef} data-thread-uuid={data.uuid} className="flex flex-col gap-2.5">
                 {
                     data.children.length === 0 ?
                         (

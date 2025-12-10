@@ -109,6 +109,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
 
         sortable.current = Sortable.create(listRef.current, {
             animation: 150,
+            draggable: ".cell-item",
             ghostClass: "ghost",     // class applied while dragging
             chosenClass: "chosen",   // class when selected
             dragClass: "drag",       // class while dragging item
@@ -208,6 +209,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                 href={data.link}
                 title={data.description || data.link}
                 rel="noopener noreferrer"
+                data-cell-uuid={data.uuid}
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={() => setIsDragging(false)}
                 onMouseEnter={() => {
@@ -215,7 +217,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                     updateMenuPosition();
                 }}
                 onMouseLeave={() => setIsHoveringCell(false)}
-                className="group relative flex items-center gap-3 p-3 rounded-lg bg-white/5
+                className="cell-item group relative flex items-center gap-3 p-3 rounded-lg bg-white/5
                        border border-white/10 hover:bg-white/10 shadow-sm backdrop-blur-sm hover:shadow-md overflow-visible">
 
                 {/* Icon */}

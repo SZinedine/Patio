@@ -13,7 +13,6 @@ import Sortable from 'sortablejs';
 import { applyBackgroundDataUrl, loadAndApplyBackground } from './Utils/SettingsUtils';
 import { backupBundleToBlob, buildBackupBundle, parseBackupFile } from './Utils/Backup';
 
-
 const Browser = typeof browser !== "undefined" ? browser : chrome;
 
 export default function App() {
