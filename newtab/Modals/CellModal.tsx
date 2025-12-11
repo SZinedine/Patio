@@ -13,9 +13,9 @@ interface CellModalProps {
 }
 
 export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps): ReactNode {
-    const [link, setLink] = useState('');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
+    const [link, setLink] = useState("https://");
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const ref = useRef<HTMLDialogElement>(null);
     const linkRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +35,6 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
             setLink(cell.link);
             setTitle(cell.title);
             setDescription(cell.description);
-
         }
 
         ref.current?.showModal();
@@ -89,7 +88,7 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
     }
 
     const clear = () => {
-        setLink("");
+        setLink("https://");
         setTitle("");
         setDescription("");
     }
@@ -164,7 +163,7 @@ function InputLink({ ref, value, setValue, onKeyDown }: InputLinkProps): ReactEl
                     placeholder="https://"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    pattern="^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9-].*[a-zA-Z0-9])?.)+[a-zA-Z].*$"
+                    pattern="^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9\-].*[a-zA-Z0-9])?.)+[a-zA-Z].*$"
                     title={t("cellmodal_url_invalid")}
                     className="grow"
                 />
