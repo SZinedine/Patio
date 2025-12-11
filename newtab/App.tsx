@@ -36,7 +36,8 @@ export default function App() {
     useEffect(() => {
         const init = async () => {
             try {
-                const [data_, settings_] = await Promise.all([
+                const [_, data_, settings_] = await Promise.all([
+                    loadAndApplyBackground(),
                     fetchData(),
                     fetchSettings()
                 ]);

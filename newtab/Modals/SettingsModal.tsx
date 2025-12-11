@@ -25,10 +25,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        loadAndApplyBackground();
-    }, []);
-
     const onOkClicked = async (e: React.FormEvent) => {
         e.preventDefault();
 
