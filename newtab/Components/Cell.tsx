@@ -6,6 +6,7 @@ import { dataUrlToBlob, fetchIconFromBackground, getCachedIcon, storeIcon } from
 import { useLock } from '../Context/LockContext';
 import { useDataContext } from '../Context/DataContext';
 import Sortable from 'sortablejs';
+import { t } from '../Utils/i18n';
 
 interface CellProps {
     data: CellType;
@@ -132,7 +133,7 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
         e.preventDefault();
         e.stopPropagation();
 
-        if (window.confirm("Are you sure you want to delete this cell?")) {
+        if (window.confirm(t("confirm_delete_cell"))) {
             dispatch({ type: 'DELETE_CELL', payload: data.uuid });
         }
     };
@@ -261,21 +262,21 @@ export const Cell: React.FC<CellProps> = ({ data, onEdit, onAddSubCell, isSubCel
                                 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <button
                             onClick={handleEditCell}
-                            title="Edit Cell"
+                            title={t("cell_button_edit_title")}
                             className={cellButtonClassName}>
                             <Pencil size={14} />
                         </button>
                         {!isSubCell &&
                             <button
                                 onClick={handleAddSubCell}
-                                title="Add Sub Cell"
+                                title={t("cell_button_add_subcell_title")}
                                 className={cellButtonClassName}>
                                 <Plus size={14} />
                             </button>
                         }
                         <button
                             onClick={handleDeleteCell}
-                            title="Delete Cell"
+                            title={t("cell_button_delete_cell_title")}
                             className="p-1.5 rounded-md text-gray-400 hover:text-red-400
                                        hover:bg-red-400/10 transition-colors">
                             <X size={14} />

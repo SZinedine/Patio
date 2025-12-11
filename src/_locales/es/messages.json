@@ -1,0 +1,113 @@
+{
+    "extName": {
+        "message": "Patio",
+        "description": "Nombre de la extensión"
+    },
+    "extDescription": {
+        "message": "Una extensión de Speed Dial limpia",
+        "description": "Descripción de la extensión"
+    },
+    "newtab_title": {
+        "message": "Nueva pestaña",
+        "description": "Título de la página de nueva pestaña"
+    },
+    "settings_title": {
+        "message": "Configuración"
+    },
+    "common_cancel": {
+        "message": "Cancelar"
+    },
+    "common_ok": {
+        "message": "Aceptar"
+    },
+    "settings_wallpaper": {
+        "message": "Fondo de pantalla"
+    },
+    "settings_backup_restore": {
+        "message": "Copia de seguridad y restauración"
+    },
+    "settings_backup_help": {
+        "message": "Descargar una copia de seguridad."
+    },
+    "settings_backup_button": {
+        "message": "Copia de seguridad"
+    },
+    "settings_restore_help": {
+        "message": "Selecciona una copia de seguridad para restaurar."
+    },
+    "error_backup_create_file": {
+        "message": "No se pudo crear el archivo de copia de seguridad."
+    },
+    "error_restore_selected_backup": {
+        "message": "No se pudo restaurar desde la copia de seguridad seleccionada."
+    },
+    "error_restore_backup": {
+        "message": "No se pudo restaurar la copia de seguridad."
+    },
+    "error_cell_data_required": {
+        "message": "Se requieren los datos de la celda."
+    },
+    "confirm_delete_cell": {
+        "message": "¿Seguro que quieres eliminar esta celda?"
+    },
+    "confirm_delete_thread": {
+        "message": "¿Eliminar toda esta sección?"
+    },
+    "cellmodal_title_edit": {
+        "message": "Editar celda"
+    },
+    "cellmodal_title_new": {
+        "message": "Nueva celda"
+    },
+    "cellmodal_label_url": {
+        "message": "URL"
+    },
+    "cellmodal_label_title": {
+        "message": "Título"
+    },
+    "cellmodal_label_description": {
+        "message": "Descripción"
+    },
+    "cellmodal_placeholder_title": {
+        "message": "Título"
+    },
+    "cellmodal_placeholder_description": {
+        "message": "Descripción"
+    },
+    "cellmodal_url_invalid": {
+        "message": "Debe ser una URL válida"
+    },
+    "thread_menu_edit_title": {
+        "message": "Editar título"
+    },
+    "thread_menu_delete_thread": {
+        "message": "Eliminar sección"
+    },
+    "thread_empty": {
+        "message": "Aún no hay celdas"
+    },
+    "thread_add_cell": {
+        "message": "Añadir celda"
+    },
+    "thread_new_default_title": {
+        "message": "Nueva sección"
+    },
+    "thread_add_new_thread_title": {
+        "message": "Añadir nueva sección"
+    },
+    "thread_new_thread_label": {
+        "message": "NUEVA SECCIÓN"
+    },
+    "cell_button_edit_title": {
+        "message": "Editar celda"
+    },
+    "cell_button_add_subcell_title": {
+        "message": "Añadir subcelda"
+    },
+    "cell_button_delete_cell_title": {
+        "message": "Eliminar celda"
+    },
+    "lock_toggle_title": {
+        "message": "Bloquear/Desbloquear"
+    }
+}

@@ -1,5 +1,6 @@
 import { FormEvent, MouseEvent, useState, useEffect, useRef, RefObject, ReactNode, ReactElement } from 'react';
 import { CellType, createCell } from '../Utils/Types';
+import { t } from '../Utils/i18n';
 
 export type CellModalModeType = "" | "add-cell" | "add-subcell" | "edit";
 
@@ -27,7 +28,7 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
         } else if (mode === "edit") {
             if (!cell) {
                 console.error("CellModal opened in edit mode without a cell");
-                alert("CellModal opened in edit mode without a cell");
+                alert(t("error_cell_data_required"));
                 return;
             }
 
@@ -52,7 +53,7 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
         if (mode === "edit") {
             if (!cell) {
                 console.error("CellModal opened in edit mode without a cell");
-                alert("CellModal opened in edit mode without a cell");
+                alert(t("error_cell_data_required"));
                 return;
             }
 
@@ -100,23 +101,25 @@ export function CellModal({ mode, onClose, onAdd, onEdit, cell }: CellModalProps
 
     return <dialog ref={ref} className="modal modal-bottom sm:modal-middle animate-in fade-in duration-200" onClose={close}>
         <div className="modal-box border border-base-100/30 bg-base-100/40 backdrop-blur-3xl">
-            <h2 className="font-bold text-xl text-center">{cell ? 'Edit Cell' : 'New Cell'}</h2>
+            <h2 className="font-bold text-xl text-center">
+                {cell ? t("cellmodal_title_edit") : t("cellmodal_title_new")}
+            </h2>
             <fieldset className="fieldset flex flex-col justify-center p-2">
 
-                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">URL</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">{t("cellmodal_label_url")}</label>
                 <InputLink ref={linkRef} value={link} setValue={setLink} onKeyDown={onKeyDown} />
 
-                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">TITLE</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder="Title" className={inputCls} onKeyDown={onKeyDown} />
+                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">{t("cellmodal_label_title")}</label>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder={t("cellmodal_placeholder_title")} className={inputCls} onKeyDown={onKeyDown} />
 
-                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">DESCRIPTION</label>
-                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder="Description" className={inputCls} onKeyDown={onKeyDown} />
+                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider">{t("cellmodal_label_description")}</label>
+                <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" placeholder={t("cellmodal_placeholder_description")} className={inputCls} onKeyDown={onKeyDown} />
 
             </fieldset>
             <div className="modal-action">
                 <form method="dialog">
-                    <button className="btn" onClick={close}>Cancel</button>
-                    <button className="btn" onClick={handleManualSubmit}>ok</button>
+                    <button className="btn" onClick={close}>{t("common_cancel")}</button>
+                    <button className="btn" onClick={handleManualSubmit}>{t("common_ok")}</button>
                 </form>
             </div>
         </div>
@@ -162,12 +165,12 @@ function InputLink({ ref, value, setValue, onKeyDown }: InputLinkProps): ReactEl
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     pattern="^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9-].*[a-zA-Z0-9])?.)+[a-zA-Z].*$"
-                    title="Must be valid URL"
+                    title={t("cellmodal_url_invalid")}
                     className="grow"
                 />
             </label>
 
-            <p className="validator-hint text-xs mt-1">Must be valid URL</p>
+            <p className="validator-hint text-xs mt-1">{t("cellmodal_url_invalid")}</p>
         </div>
     );
 }

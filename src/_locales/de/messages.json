@@ -1,0 +1,113 @@
+{
+    "extName": {
+        "message": "Patio",
+        "description": "Erweiterungsname"
+    },
+    "extDescription": {
+        "message": "Eine schlanke Speed-Dial-Erweiterung",
+        "description": "Erweiterungsbeschreibung"
+    },
+    "newtab_title": {
+        "message": "Neuer Tab",
+        "description": "Titel der neuen Tab-Seite"
+    },
+    "settings_title": {
+        "message": "Einstellungen"
+    },
+    "common_cancel": {
+        "message": "Abbrechen"
+    },
+    "common_ok": {
+        "message": "OK"
+    },
+    "settings_wallpaper": {
+        "message": "Hintergrundbild"
+    },
+    "settings_backup_restore": {
+        "message": "Sichern & Wiederherstellen"
+    },
+    "settings_backup_help": {
+        "message": "Sicherungsdatei herunterladen."
+    },
+    "settings_backup_button": {
+        "message": "Sichern"
+    },
+    "settings_restore_help": {
+        "message": "Sicherungsdatei zum Wiederherstellen auswählen."
+    },
+    "error_backup_create_file": {
+        "message": "Sicherungsdatei konnte nicht erstellt werden."
+    },
+    "error_restore_selected_backup": {
+        "message": "Wiederherstellung aus der ausgewählten Sicherung fehlgeschlagen."
+    },
+    "error_restore_backup": {
+        "message": "Wiederherstellung der Sicherung fehlgeschlagen."
+    },
+    "error_cell_data_required": {
+        "message": "Zelldaten sind erforderlich."
+    },
+    "confirm_delete_cell": {
+        "message": "Bist du sicher, dass du diese Zelle löschen möchtest?"
+    },
+    "confirm_delete_thread": {
+        "message": "Diesen Abschnitt vollständig löschen?"
+    },
+    "cellmodal_title_edit": {
+        "message": "Zelle bearbeiten"
+    },
+    "cellmodal_title_new": {
+        "message": "Neue Zelle"
+    },
+    "cellmodal_label_url": {
+        "message": "URL"
+    },
+    "cellmodal_label_title": {
+        "message": "Titel"
+    },
+    "cellmodal_label_description": {
+        "message": "Beschreibung"
+    },
+    "cellmodal_placeholder_title": {
+        "message": "Titel"
+    },
+    "cellmodal_placeholder_description": {
+        "message": "Beschreibung"
+    },
+    "cellmodal_url_invalid": {
+        "message": "Muss eine gültige URL sein"
+    },
+    "thread_menu_edit_title": {
+        "message": "Titel bearbeiten"
+    },
+    "thread_menu_delete_thread": {
+        "message": "Abschnitt löschen"
+    },
+    "thread_empty": {
+        "message": "Noch keine Zellen"
+    },
+    "thread_add_cell": {
+        "message": "Zelle hinzufügen"
+    },
+    "thread_new_default_title": {
+        "message": "Neuer Abschnitt"
+    },
+    "thread_add_new_thread_title": {
+        "message": "Neuen Abschnitt hinzufügen"
+    },
+    "thread_new_thread_label": {
+        "message": "NEUER ABSCHNITT"
+    },
+    "cell_button_edit_title": {
+        "message": "Zelle bearbeiten"
+    },
+    "cell_button_add_subcell_title": {
+        "message": "Unterzelle hinzufügen"
+    },
+    "cell_button_delete_cell_title": {
+        "message": "Zelle löschen"
+    },
+    "lock_toggle_title": {
+        "message": "Sperren/Entsperren"
+    }
+}

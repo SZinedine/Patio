@@ -5,6 +5,7 @@ import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLock } from '../Context/LockContext';
 import { useDataContext } from '../Context/DataContext';
 import Sortable, { SortableEvent } from 'sortablejs';
+import { t } from '../Utils/i18n';
 
 interface ThreadProps {
     data: ThreadType;
@@ -119,7 +120,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
     };
 
     const onDeleteThread = (uuid: string) => {
-        if (window.confirm("Delete this entire thread?")) {
+        if (window.confirm(t("confirm_delete_thread"))) {
             dispatch({ type: 'DELETE_THREAD', payload: uuid });
         }
     }
@@ -173,7 +174,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                     setIsMenuOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 hover:text-gray-300 flex items-center gap-2 transition-colors" >
-                                <Pencil size={14} /> Edit Title
+                                <Pencil size={14} /> {t("thread_menu_edit_title")}
                             </button>
                             <div className="h-px bg-white/30 my-0.5" />
                             <button
@@ -182,7 +183,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                     setIsMenuOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-200/15 flex items-center gap-2 transition-colors">
-                                <Trash2 size={14} /> Delete Thread
+                                <Trash2 size={14} /> {t("thread_menu_delete_thread")}
                             </button>
                         </div>
                     )
@@ -198,7 +199,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                     data.children.length === 0 ?
                         (
                             <div className="py-8 text-center border-2 border-dashed border-white/10 rounded-xl text-gray-500 text-sm">
-                                No Cells yet
+                                {t("thread_empty")}
                             </div>
                         ) :
                         (
@@ -224,7 +225,7 @@ export const Thread: FC<ThreadProps> = ({ data, onAddCell, onEditCell, onAddSubC
                                    transition-all flex items-center justify-center gap-2 text-sm"
             >
                 <Plus size={14} />
-                Add Cell
+                {t("thread_add_cell")}
             </button>
         }
     </div>

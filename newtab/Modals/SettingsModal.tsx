@@ -1,6 +1,7 @@
 import React, { useEffect, forwardRef, useRef } from 'react';
 import { SettingsType } from '../Utils/Types';
 import { loadAndApplyBackground, storeImage } from '../Utils/SettingsUtils';
+import { t } from '../Utils/i18n';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -62,7 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             await onBackup();
         } catch (error) {
             console.error(error);
-            alert("Failed to create backup file.");
+            alert(t("error_backup_create_file"));
         }
     };
 
@@ -76,7 +77,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             await onRestore(file);
         } catch (error) {
             console.error(error);
-            alert("Failed to restore from the selected backup.");
+            alert(t("error_restore_selected_backup"));
         } finally {
             if (restoreFileRef.current) {
                 restoreFileRef.current.value = "";
@@ -93,7 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     return (
         <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onKeyDown={onKeyDown}>
             <div className="modal-box bg-base-100/40 backdrop-blur-2xl">
-                <h2 className="font-bold text-3xl text-center">Settings</h2>
+                <h2 className="font-bold text-3xl text-center">{t("settings_title")}</h2>
 
                 <BackgroundImage ref={bgImageRef} />
                 <BackupRestoreControls
@@ -102,8 +103,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                 />
 
                 <div className="modal-action">
-                    <button className="btn" onClick={onCancelClicked}>Cancel</button>
-                    <button className="btn" onClick={onOkClicked}>OK</button>
+                    <button className="btn" onClick={onCancelClicked}>{t("common_cancel")}</button>
+                    <button className="btn" onClick={onOkClicked}>{t("common_ok")}</button>
                 </div>
             </div>
         </dialog>
@@ -114,7 +115,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
 const BackgroundImage = forwardRef<HTMLInputElement>((_props, ref) => {
     return (
         <fieldset className="fieldset center mt-3">
-            <legend className="fieldset-legend text-xl">Wallpaper</legend>
+            <legend className="fieldset-legend text-xl">{t("settings_wallpaper")}</legend>
             <input ref={ref} type="file" accept="image/*" className="file-input place-self-center bg-base-200/60" />
         </fieldset>
     );
@@ -130,17 +131,17 @@ type BackupRestoreProps = {
 const BackupRestoreControls: React.FC<BackupRestoreProps> = ({ onBackupClicked, restoreFileRef }) => {
     return (
         <fieldset className="fieldset mt-3">
-            <legend className="fieldset-legend text-xl">Backup & Restore</legend>
+            <legend className="fieldset-legend text-xl">{t("settings_backup_restore")}</legend>
             <div className="flex flex-col sm:flex-row gap-1 sm:items-center sm:justify-between">
                 <div className="items-center gap-3">
-                    <p className="text-xs opacity-70">Download a backup file.</p>
+                    <p className="text-xs opacity-70">{t("settings_backup_help")}</p>
                     <button className="btn" type="button" onClick={onBackupClicked}>
-                        Backup
+                        {t("settings_backup_button")}
                     </button>
                 </div>
                 <div className="divider lg:divider-horizontal"></div>
                 <div className="items-center gap-3">
-                    <p className="text-xs opacity-70">Select a backup file to restore.</p>
+                    <p className="text-xs opacity-70">{t("settings_restore_help")}</p>
                     <input
                         ref={restoreFileRef}
                         type="file"

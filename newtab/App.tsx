@@ -12,6 +12,7 @@ import { DataContext } from './Context/DataContext';
 import Sortable from 'sortablejs';
 import { applyBackgroundDataUrl, loadAndApplyBackground } from './Utils/SettingsUtils';
 import { backupBundleToBlob, buildBackupBundle, parseBackupFile } from './Utils/Backup';
+import { t } from './Utils/i18n';
 
 const Browser = typeof browser !== "undefined" ? browser : chrome;
 
@@ -130,7 +131,7 @@ export default function App() {
 
     // Handlers
     const handleAddThread = () => {
-        const newThread = createThread("New Thread");
+        const newThread = createThread(t("thread_new_default_title"));
         dispatch({ type: 'ADD_THREAD', payload: newThread });
     };
 
@@ -147,7 +148,7 @@ export default function App() {
     const handleOpenEditCell = (cell: CellType) => {
         if (!cell) {
             console.error("Cell data is required to add a cell.");
-            alert("Cell data is required to add a cell.");
+            alert(t("error_cell_data_required"));
             return;
         }
 
@@ -199,7 +200,7 @@ export default function App() {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Failed to create backup:", error);
-            alert("Failed to create backup file.");
+            alert(t("error_backup_create_file"));
         }
     };
 
@@ -221,7 +222,7 @@ export default function App() {
             }
         } catch (error) {
             console.error("Failed to restore backup:", error);
-            alert(error instanceof Error ? error.message : "Failed to restore backup.");
+            alert(error instanceof Error ? error.message : t("error_restore_backup"));
         }
     };
 
@@ -283,7 +284,7 @@ export default function App() {
                                 <div className="no-drag flex flex-col w-16 shrink-0 h-full pt-11">
                                     <button
                                         onClick={handleAddThread}
-                                        title="Add New Thread"
+                                        title={t("thread_add_new_thread_title")}
                                         className="w-12 h-full max-h-[80vh] rounded-2xl border-2 border-dashed
                                            border-white/20 hover:border-white/50 hover:bg-white/5 flex
                                            flex-col items-center justify-center gap-4 text-white/40 hover:text-white transition-all group" >
@@ -294,7 +295,8 @@ export default function App() {
                                             className="vertical-text text-sm font-medium tracking-widest opacity-0
                                                group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
                                             style={{ writingMode: 'vertical-rl' }}
-                                        > NEW THREAD
+                                        >
+                                            {t("thread_new_thread_label")}
                                         </span>
                                     </button>
                                 </div>
