@@ -1,6 +1,6 @@
 {
     "name": "Patio",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "A clean Speed Dial extension",
     "scripts": {
         "build": "npm run build:chrome",
