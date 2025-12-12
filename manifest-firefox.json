@@ -31,6 +31,9 @@
     "chrome_url_overrides": {
         "newtab": "newtab.html"
     },
+    "chrome_settings_overrides": {
+        "homepage": "newtab.html"
+    },
     "background": {
         "scripts": [
             "worker/data.js",
